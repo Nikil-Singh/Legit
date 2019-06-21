@@ -1,0 +1,2 @@
+Date        Start   Stop    Activity    Comments
+21/06/19    20:00   21:00   Coding      Implemented basic init and add functionality.
