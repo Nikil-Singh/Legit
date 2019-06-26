@@ -1,0 +1,41 @@
+#!/bin/dash
+# Created by Nikil Singh z5209322
+
+if ! test $# -eq 2
+then
+    echo "usage: legit-commit [-a] -m commit-message"
+    exit 1
+    # Things to do
+    # Also handle case where message is empty string i.e. " "
+fi
+
+# Gets number of files to be added.
+num=`ls -l .legit/.index/.branches/master| egrep -c ^-`
+
+# If number of files is 0, then output error  message.
+if test $num -eq 0
+then
+    echo "nothing to commit"
+    exit 1
+fi
+
+# Gets number of previous commits.
+com=`ls -l .legit/.prev/master/| egrep -c ^d`
+# Creates directory for commit, where commits begin from 0.
+mkdir .legit/.prev/master/$com
+
+# Starts copying over the contents of index to a folder for version control.
+for file in .legit/.index/.branches/master/*
+do
+    cp $file ".legit/.prev/master/$com"
+done
+
+# Updates the commit log.
+echo "$com $2" >> .legit/.prev/master/commitLog.txt
+echo "Committed as commit $com"
+
+# Removes files from index that were added through commits.
+for file in .legit/.index/.branches/master/*
+do
+    rm $file
+done
