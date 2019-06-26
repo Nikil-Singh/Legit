@@ -1,2 +1,4 @@
 Date        Start   Stop    Activity    Comments
 21/06/19    20:00   21:00   Coding      Implemented basic init and add functionality.
+25/06/19    20:00   21:00   Debugging   Fixed issue with file name having .sh at the end.
+26/06/19    11:00   13:00   Coding      Added error messages to legit-add, with file adding capability and updated legit-init to hold an index directory and a directory for previous commits.
