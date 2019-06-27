@@ -1,2 +1,59 @@
 #!/bin/dash
 # Created by Nikil Singh z5209322
+
+# Checks if no arguements are given.
+if test $# -eq 0
+then
+    echo "usage: legit-show <commit>:<filename>"
+    exit 1
+fi
+
+# Checks if the only arguement is an unknown object, without ':'.
+if echo "$1" | egrep -v ':' >/dev/null
+then
+    echo "legit-show: error: invalid object $1"
+    exit 1
+fi
+
+# Checks if the only arguement are characters followed by ':'.
+if echo "$1" | egrep ':$' > /dev/null
+then
+    echo "legit-show: error: invalid filename ''"
+    exit 1
+fi
+
+# Gets the commit number and directory.
+commitNum=`echo $1 | sed 's/:.*$//g'`
+commitDir=".legit/.prev/master/$commitNum"
+
+# Checks if the commit number is valid.
+if ! test -d $commitDir
+then
+    echo "legit-show: error: unknown commit '$commitNum'"
+    exit 1
+fi
+
+# Gets the file name and its directory.
+file=`echo $1 | sed 's/.*://g'`
+message=""
+
+# Handles the case where there is nothing preceeding ':' for checking for file
+# in index.
+if test -z $commitNum
+then
+    fileDir=".legit/.index/.branches/master/$file"
+    message="index"
+else
+    fileDir=".legit/.prev/master/$commitNum/$file"
+    message="commit $commitNum"
+fi
+
+# Checks if the file cannot be found in the commit folder.
+if ! test -e $fileDir
+then
+    echo "legit-show: error: '$file' not found in $message"
+    exit 1
+fi
+
+# Displays the contents of the file from required commit or index.
+cat $fileDir
