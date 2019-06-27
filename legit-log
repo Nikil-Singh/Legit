@@ -2,7 +2,7 @@
 # Created by Nikil Singh z5209322
 
 # Checks if commit log is empty.
-if test -s .legit/.prev/master/commitLog.txt
+if ! test -s .legit/.prev/master/commitLog.txt
 then
     echo "legit-log: error: your repository does not have any commits yet"
     exit 1
@@ -10,4 +10,4 @@ fi
 
 # Prints out the commit log for that branch.
 file=.legit/.prev/master/commitLog.txt
-cat $file | tail -r
+tac $file

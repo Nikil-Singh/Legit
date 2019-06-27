@@ -28,5 +28,5 @@ done
 # Adds the files to the index.
 for file in $@
 do
-    cp $file ".legit/.index/.branches/master"
-done    
+    cp $file ".legit/.index/master"
+done

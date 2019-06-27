@@ -41,7 +41,7 @@ message=""
 # in index.
 if test -z $commitNum
 then
-    fileDir=".legit/.index/.branches/master/$file"
+    fileDir=".legit/.index/master/$file"
     message="index"
 else
     fileDir=".legit/.prev/master/$commitNum/$file"

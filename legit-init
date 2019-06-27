@@ -14,9 +14,8 @@ then
     echo "legit-init: error: .legit already exists"
 else
     mkdir .legit                            # Initialises the .legit folder.
-    mkdir .legit/.index                     # Holds all current files added.
-    mkdir .legit/.index/.branches           # Holds all the currents branches.
-    mkdir .legit/.index/.branches/master    # Holds all the currents branches.
+    mkdir .legit/.index                     # Holds all current files and branches added.
+    mkdir .legit/.index/master              # Holds all the master branch.
     mkdir .legit/.prev                      # Holds all files based on commit number.
     mkdir .legit/.prev/master               # Holds all versions of master.
     touch .legit/.prev/master/commitLog.txt # Generates text file to log commits.

@@ -5,27 +5,79 @@ if ! test $# -eq 2
 then
     echo "usage: legit-commit [-a] -m commit-message"
     exit 1
-    # Things to do
-    # Also handle case where message is empty string i.e. " "
 fi
 
-# Gets number of files to be added.
-numFiles=`ls -l .legit/.index/.branches/master| egrep -c ^-`
+# Removes all whitespace from message.
+message=`echo $2 | sed 's/ *//g'`
 
-# If number of files is 0, then output error  message.
+#Checks if message is empty.
+if test -z $message
+then
+    echo "usage: legit-commit [-a] -m commit-message"
+    exit 1
+fi
+
+# also use diff to check between files before commiting.
+# First get directory of index, then check the difference in any files
+# from the previous commit, if there is no difference print 'nothing to commit'.
+# If there are differences or new files, then commit.
+
+# Gets number of files to be added.
+numFiles=`ls -l .legit/.index/master/| egrep -c ^-`
+# Gets number of previous commits.
+numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
+
+# Checks if number of files in index is 0, then output error  message.
 if test $numFiles -eq 0
 then
     echo "nothing to commit"
     exit 1
 fi
 
-# Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
+
+# Checks if prevCommit is a negative, in which case there are no previous commits.
+if ls -l .legit/.prev/master/| egrep -c ^d > /dev/null
+then
+    # Sets previous commit number to be one less than total commits as they start
+    # from 0.
+    prevCommit=`expr $numCommits - 1`
+
+    # Gets number of files in previous commit.
+    numFilesPrev=`ls -l .legit/.prev/master/$prevCommit/*| egrep -c ^-`
+
+    # Checks if same number of files exist in previous commits and index, then checks
+    # if all the files are the same and if their contents have changed. If the
+    # content hasn't changed, then it outputs an error message.
+    if test $numCommits -gt 0 -a $numFiles -eq $numFilesPrev
+    then
+        dif=0
+        # Cycles through all files in previous commit.
+        for file in .legit/.prev/master/$prevCommit/*
+        do
+            fileName=`echo $file | sed 's/^.*[/]//g'`
+            # Checks if file exists.
+            if test -e .legit/.index/master/$fileName
+            then
+                # Checks if files have different content.
+                if ! diff .legit/.index/master/$fileName $file > /dev/null
+                then
+                    dif=1
+                fi
+            fi
+        done
+        # If files don't have different content then it outputs an error message.
+        if test $dif -eq 0
+        then
+            echo "nothing to commit"
+            exit 1
+        fi
+    fi
+fi
 # Creates directory for commit, where commits begin from 0.
 mkdir .legit/.prev/master/$numCommits
 
 # Starts copying over the contents of index to a folder for version control.
-for file in .legit/.index/.branches/master/*
+for file in .legit/.index/master/*
 do
     cp $file ".legit/.prev/master/$numCommits"
 done
@@ -33,9 +85,3 @@ done
 # Updates the commit log.
 echo "$numCommits $2" >> .legit/.prev/master/commitLog.txt
 echo "Committed as commit $numCommits"
-
-# Removes files from index that were added through commits.
-for file in .legit/.index/.branches/master/*
-do
-    rm $file
-done
