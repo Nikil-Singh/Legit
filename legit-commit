@@ -1,26 +1,53 @@
 #!/bin/dash
 # Created by Nikil Singh z5209322
 
-if ! test $# -eq 2
+if ! test $# -ge 2 -a $# -le 3
 then
+    echo "ARGUEMENTS"
     echo "usage: legit-commit [-a] -m commit-message"
     exit 1
 fi
 
+# Gets message based on the number of arguements given.
+if test $# -eq 2
+then
+    tmpMessage=$2
+    mFlag=$1
+else
+    tmpMessage=$3
+    mFlag=$1
+    aFlag=$2
+fi
+
 # Removes all whitespace from message.
-message=`echo $2 | sed 's/ *//g'`
+message=`echo $tmpMessage | sed 's/ *//g'`
 
 #Checks if message is empty.
 if test -z $message
 then
+    echo "MESSAGE"
     echo "usage: legit-commit [-a] -m commit-message"
     exit 1
 fi
 
-# also use diff to check between files before commiting.
-# First get directory of index, then check the difference in any files
-# from the previous commit, if there is no difference print 'nothing to commit'.
-# If there are differences or new files, then commit.
+# Checks if given flags are correct.
+if test $# -eq 2
+then
+    # Checks if -m flag is present.
+    if test $mFlag != "-m"
+    then
+        echo "2 ARGS"
+        echo "usage: legit-commit [-a] -m commit-message"
+        exit 1
+    fi
+else
+    # Checks if -m and -a flags are present in correct order.
+    if test $mFlag != "-a" -a $aFlag != "-m"
+    then
+        echo "usage: legit-commit [-a] -m commit-message"
+        exit 1
+    fi
+fi
 
 # Gets number of files to be added.
 numFiles=`ls -l .legit/.index/master/| egrep -c ^-`
@@ -33,6 +60,9 @@ then
     echo "nothing to commit"
     exit 1
 fi
+
+# Since flags are correct, and to account for the -a flag the following
+# moves the required files over.
 
 
 # Checks if prevCommit is a negative, in which case there are no previous commits.
@@ -83,5 +113,5 @@ do
 done
 
 # Updates the commit log.
-echo "$numCommits $2" >> .legit/.prev/master/commitLog.txt
+echo "$numCommits $tmpMessage" >> .legit/.prev/master/commitLog.txt
 echo "Committed as commit $numCommits"

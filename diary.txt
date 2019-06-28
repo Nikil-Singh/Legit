@@ -5,3 +5,4 @@ Date        Start   Stop    Activity   Comments
 26/06/19    18:00   21:30   Coding     Implemented legit-commit and legit-log.
 27/06/19    13:00   15:00   Coding     Implemented legit-show.
 27/06/19    18:00   21:00   Debugging  Fixed up issues with legit-commit in regards to finding differences in files and legit-log in the order in which commits needed to be printed.
+28/06/19    12:00   13:30   Coding     Made some changes to legit-commit to take in -a flag.
