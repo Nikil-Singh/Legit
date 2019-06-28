@@ -1,0 +1,9 @@
+#!/bin/dash
+# Created by Nikil Singh z5209322
+
+# Check if a .legit directory has been initialised.
+if  ! test -d .legit
+then
+    echo "$0: error: no .legit directory containing legit repository exists"
+    exit 1
+fi

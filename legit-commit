@@ -1,14 +1,22 @@
 #!/bin/dash
 # Created by Nikil Singh z5209322
 
+# Check if a .legit directory has been initialised.
+if  ! test -d .legit
+then
+    echo "$0: error: no .legit directory containing legit repository exists"
+    exit 1
+fi
+
+# Checks if the correct number of arguements are given.
 if ! test $# -ge 2 -a $# -le 3
 then
-    echo "ARGUEMENTS"
     echo "usage: legit-commit [-a] -m commit-message"
     exit 1
 fi
 
 # Gets message based on the number of arguements given.
+# The following sets variables for the sake of readability.
 if test $# -eq 2
 then
     tmpMessage=$2
@@ -63,7 +71,21 @@ fi
 
 # Since flags are correct, and to account for the -a flag the following
 # moves the required files over.
-
+if test $# -eq 3
+then
+    for file in .legit/.index/master/*
+    do
+        tmpFilename=`echo $file | sed 's/^.*[/]//g'`
+        if test -e $tmpFilename
+        then
+            # Copy over file from current directory to index.
+            cp $tmpFilename $file
+        else
+            # Remove file from index as it no longer exists in current directory.
+            rm $file
+        fi
+    done
+fi
 
 # Checks if prevCommit is a negative, in which case there are no previous commits.
 if ls -l .legit/.prev/master/| egrep -c ^d > /dev/null
