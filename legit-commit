@@ -15,16 +15,37 @@ then
     exit 1
 fi
 
-# Gets message based on the number of arguements given.
+# Checks if the correct flags are given in the correct order based on how many
+# arguements are given. Also gets message based on the number of arguements given.
 # The following sets variables for the sake of readability.
 if test $# -eq 2
 then
-    tmpMessage=$2
-    mFlag=$1
+    # If in order -m <message>
+    if test "$1" = "-m" -a "$2" != "-m" -a "$2" != "-a"
+    then
+        mFlag=$1
+        tmpMessage=$2
+    else
+        echo "usage: legit-commit [-a] -m commit-message"
+        exit 1
+    fi
 else
-    tmpMessage=$3
-    mFlag=$1
-    aFlag=$2
+    # If in order -m <message> -a
+    if test "$1" = "-m" -a "$3" = "-a" -a "$2" != "-m" -a "$2" != "-a"
+    then
+        mFlag=$1
+        tmpMessage=$2
+        aFlag=$3
+    # If in order -a -m <message>
+    elif test "$1" = "-a" -a "$2" = "-m" -a "$3" != "-m" -a "$3" != "-a"
+    then
+        mFlag=$2
+        tmpMessage=$3
+        aFlag=$1
+    else
+        echo "usage: legit-commit [-a] -m commit-message"
+        exit 1
+    fi
 fi
 
 # Removes all whitespace from message.
@@ -33,7 +54,6 @@ message=`echo $tmpMessage | sed 's/ *//g'`
 #Checks if message is empty.
 if test -z $message
 then
-    echo "MESSAGE"
     echo "usage: legit-commit [-a] -m commit-message"
     exit 1
 fi
@@ -44,13 +64,12 @@ then
     # Checks if -m flag is present.
     if test $mFlag != "-m"
     then
-        echo "2 ARGS"
         echo "usage: legit-commit [-a] -m commit-message"
         exit 1
     fi
 else
     # Checks if -m and -a flags are present in correct order.
-    if test $mFlag != "-a" -a $aFlag != "-m"
+    if test $mFlag = "-a" -o $aFlag = "-m"
     then
         echo "usage: legit-commit [-a] -m commit-message"
         exit 1

@@ -7,3 +7,17 @@ then
     echo "$0: error: no .legit directory containing legit repository exists"
     exit 1
 fi
+
+# Checks if repository has any commits.
+echo "legit-rm: error: your repository does not have any commits yet"
+
+# Check if number of arguements and formatting is correct.
+#----# NOTE: CHECK IF FLAGS HAVE TO BE IN SAME ORDER #----#
+#----# Works in any order of force, cached and filename #----#
+echo "usage: legit-rm [--force] [--cached] <filenames>"
+
+# Check if file is in .legit repository.
+echo "legit-rm: error: '$filename' is not in the legit repository"
+
+# If file is different in index and current directory.
+echo "legit-rm: error: '$filename' in index is different to both working file and repository"
