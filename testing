@@ -1,0 +1,16 @@
+#!/bin/dash
+# Created by Nikil Singh z5209322
+
+if test $# -eq 1
+then
+elif test $# -eq 2
+then
+
+elif test $# -eq 3
+then
+
+    # egrep -c "--force"
+else
+    echo "usage: legit-rm [--force] [--cached] <filenames>"
+    exit 1
+fi

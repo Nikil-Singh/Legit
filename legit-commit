@@ -4,48 +4,41 @@
 # Check if a .legit directory has been initialised.
 if  ! test -d .legit
 then
-    echo "$0: error: no .legit directory containing legit repository exists"
-    exit 1
-fi
-
-# Checks if the correct number of arguements are given.
-if ! test $# -ge 2 -a $# -le 3
-then
-    echo "usage: legit-commit [-a] -m commit-message"
+    echo "legit-commit: error: no .legit directory containing legit repository exists"
     exit 1
 fi
 
 # Checks if the correct flags are given in the correct order based on how many
 # arguements are given. Also gets message based on the number of arguements given.
-# The following sets variables for the sake of readability.
+# Also check if correct number of arguements are given. The following sets
+# variables for the sake of readability.
 if test $# -eq 2
 then
     # If in order -m <message>
     if test "$1" = "-m" -a "$2" != "-m" -a "$2" != "-a"
     then
-        mFlag=$1
         tmpMessage=$2
+    else
+        echo "usage: legit-commit [-a] -m commit-message"
+        exit 1
+    fi
+elif test $# -eq 3
+then
+    # If in order -m <message> -a
+    if test "$1" = "-m" -a "$3" = "-a" -a "$2" != "-m" -a "$2" != "-a"
+    then
+        tmpMessage=$2
+    # If in order -a -m <message>
+    elif test "$1" = "-a" -a "$2" = "-m" -a "$3" != "-m" -a "$3" != "-a"
+    then
+        tmpMessage=$3
     else
         echo "usage: legit-commit [-a] -m commit-message"
         exit 1
     fi
 else
-    # If in order -m <message> -a
-    if test "$1" = "-m" -a "$3" = "-a" -a "$2" != "-m" -a "$2" != "-a"
-    then
-        mFlag=$1
-        tmpMessage=$2
-        aFlag=$3
-    # If in order -a -m <message>
-    elif test "$1" = "-a" -a "$2" = "-m" -a "$3" != "-m" -a "$3" != "-a"
-    then
-        mFlag=$2
-        tmpMessage=$3
-        aFlag=$1
-    else
-        echo "usage: legit-commit [-a] -m commit-message"
-        exit 1
-    fi
+    echo "usage: legit-commit [-a] -m commit-message"
+    exit 1
 fi
 
 # Removes all whitespace from message.
@@ -56,24 +49,6 @@ if test -z $message
 then
     echo "usage: legit-commit [-a] -m commit-message"
     exit 1
-fi
-
-# Checks if given flags are correct.
-if test $# -eq 2
-then
-    # Checks if -m flag is present.
-    if test $mFlag != "-m"
-    then
-        echo "usage: legit-commit [-a] -m commit-message"
-        exit 1
-    fi
-else
-    # Checks if -m and -a flags are present in correct order.
-    if test $mFlag = "-a" -o $aFlag = "-m"
-    then
-        echo "usage: legit-commit [-a] -m commit-message"
-        exit 1
-    fi
 fi
 
 # Gets number of files to be added.

@@ -4,20 +4,110 @@
 # Check if a .legit directory has been initialised.
 if  ! test -d .legit
 then
-    echo "$0: error: no .legit directory containing legit repository exists"
+    echo "legit-rn: error: no .legit directory containing legit repository exists"
     exit 1
 fi
 
 # Checks if repository has any commits.
-echo "legit-rm: error: your repository does not have any commits yet"
+# Gets number of previous commits.
+numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
+if ! ls -l .legit/.prev/master/| egrep -c ^d > /dev/null
+then
+    echo "legit-rm: error: your repository does not have any commits yet"
+    exit 1
+fi
 
 # Check if number of arguements and formatting is correct.
-#----# NOTE: CHECK IF FLAGS HAVE TO BE IN SAME ORDER #----#
-#----# Works in any order of force, cached and filename #----#
-echo "usage: legit-rm [--force] [--cached] <filenames>"
+if test $# -eq 1
+then
+    # Checks if the only arguement given is the filename.
+    if test "$1" != "--cached" -a "$1" != "--force"
+    then
+        filename="$1"
+    else
+        echo "usage: legit-rm [--force] [--cached] <filenames>"
+        exit 1
+    fi
+elif test $# -eq 2
+then
+    # If in order --cached <filename>.
+    if test "$1" = "--cached" -a "$2" != "--cached" -a "$2" != "--force"
+    then
+        flag="$1"
+        filename="$2"
+    # If in order <filename> --cached
+    elif test "$1" != "--cached" -a $1 != "--force" -a $2 = "--cached"
+    then
+        flag="$2"
+        filename="$1"
+    # If in order --force <filename>
+    elif test "$1" = "--force" -a "$2" != "--cached" -a "$2" != "--force"
+    then
+        flag="$1"
+        filename="$2"
+    # If in order <filename> --force
+    elif test "$1" != "--cached" -a $1 != "--force" -a "$2" = "--force"
+    then
+        flag="$2"
+        filename="$1"
+    else
+        echo "usage: legit-rm [--force] [--cached] <filenames>"
+        exit 1
+    fi
+elif test $# -eq 3
+then
+    # If in order --force --cached <filename>
+    if test "$1" = "--force" -a "$2" = "--cached" -a "$3" != "--force" -a "$3" != "--cached"
+    then
+        filename=$3
+    # If in order --cached --force <filename>
+    elif test "$1" = "--cached" -a "$2" = "--force" -a "$3" != "--force" -a "$3" != "--cached"
+    then
+        filename=$3
+    # If in order --force <filename> --cached
+    elif test "$1" = "--force" -a  "$2" != "--force" -a "$2" != "--cached" -a "$3" = "--cached"
+    then
+        filename=$2
+    # If in order --cached <filename> --force
+    elif test "$1" = "--cached" -a  "$2" != "--force" -a "$2" != "--cached" -a "$3" = "--force"
+    then
+        filename=$2
+    # If in order <filename> --force --cached
+    elif test "$1" != "--force" -a "$1" != "--cached" -a "$2" = "--force" -a "$3" = "--cached"
+    then
+        filename=$1
+    # If in order <filename> --cached --force
+    elif test "$1" != "--force" -a "$1" != "--cached" -a "$2" = "--cached" -a "$3" = "--force"
+    then
+        filename=$1
+    else
+        echo "usage: legit-rm [--force] [--cached] <filenames>"
+        exit 1
+    fi
+else
+    echo "usage: legit-rm [--force] [--cached] <filenames>"
+    exit 1
+fi
 
 # Check if file is in .legit repository.
-echo "legit-rm: error: '$filename' is not in the legit repository"
+if ! test -e .legit/.index/master/$filename
+then
+    echo "legit-rm: error: '$filename' is not in the legit repository"
+    exit 1
+fi
 
 # If file is different in index and current directory.
-echo "legit-rm: error: '$filename' in index is different to both working file and repository"
+if ! diff .legit/.index/master/$filename $filename > /dev/null
+then
+    # Checks if 3 arguements are given, since it would then definitely include
+    # the --force flag.
+    if test $# -ne 3
+    then
+        # Checks if the --force flag was not given.
+        if ! test $# -eq 2 -a "$flag" = "--force"
+        then
+            echo "legit-rm: error: '$filename' in index is different to both working file and repository"
+            exit 1
+        fi
+    fi
+fi

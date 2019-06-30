@@ -7,5 +7,5 @@ Date        Start   Stop    Activity   Comments
 27/06/19    18:00   21:00   Debugging  Fixed up issues with legit-commit in regards to finding differences in files and legit-log in the order in which commits needed to be printed.
 28/06/19    12:00   13:30   Coding     Made some changes to legit-commit to take in -a flag.
 28/06/19    18:00   20:00   Coding     Fully implemented legit-commit [-a] and added error checking to all legit files to ensure the .legit folder exists.
-30/06/19    11:00   12:00   Debugging  Realised flags could appear in any order on reference implementation, so had to adjust code to allow for that.
-30/06/19    13:00   
+30/06/19    11:00   12:00   Debugging  Realised flags could appear in any order on reference implementation, so adjusted code to allow for that.
+30/06/19    13:00
