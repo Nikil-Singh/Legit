@@ -1,16 +1,69 @@
 #!/bin/dash
 # Created by Nikil Singh z5209322
 
-if test $# -eq 1
-then
-elif test $# -eq 2
-then
+# Gets number of previous commits.
+numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
+prevCommit=`expr $numCommits - 1`
 
-elif test $# -eq 3
-then
 
-    # egrep -c "--force"
-else
-    echo "usage: legit-rm [--force] [--cached] <filenames>"
-    exit 1
-fi
+# If current == index != prevRepo unless --cached flag is given.
+    # legit-rm: error: '$file' has changes staged in the index
+# If index != current != prevRepo
+    # "legit-rm: error: '$file' in index is different to both working file and repository"
+# If prevRepo == index != current unless --cached flag is given.
+    # legit-rm: error: '$file' in repository is different to working file.
+
+# File can be deleted if it exists in index but not current directory.
+
+for file in $files
+do
+    # Checks if file is in current directory and previos commit.
+    if test -e $file -a -e .legit/.prev/master/$prevCommit/$file
+    then
+        # Checks if file in current directory is NOT the same as the one in index.
+        if ! diff $file .legit/.index/master/$file > /dev/null
+        then
+            # Checks if file in index is NOT the same as previous commit.
+            if ! diff .legit/.index/master/$file .legit/.prev/$prevCommit/master/$file > /dev/null
+            then
+                # Here file in Index != Previous Commit && CD
+                echo "legit-rm: error: '$file' in index is different to both working file and repository"
+                exit 1
+            else
+                if test $cFlag != "--cached"
+                then
+                    # Here file in Index == Previous Commit != CD
+                    echo "legit-rm: error: '$file' in repository is different to working file."
+                    exit 1
+                fi
+                # Otherwise remove the file.
+            fi
+        # If file in current directory is the same as the one in index.
+        else
+            # Checks if file in current directory is NOT the same as previous commit.
+            if ! diff $file .legit/.prev/master/$prevCommit/$file > /dev/null
+            then
+                if test $cFlag != "--cached"
+                then
+                    # Here file in CD == Index != Previous Commit.
+                    echo "legit-rm: error: '$file' has changes staged in the index"
+                    exit 1
+                fi
+                # Otherwise remove file
+            # If file in current directory is the same as previous commit.
+                # Here file in CD == Previous Commit == Index
+                # REMOVE FILE
+            fi
+        fi
+    # If file is only in index and current directory.
+    elif test -e $file
+    then
+        # Checks if file in index is NOT the same as file in current directory.
+        if ! diff $file .legit/.prev/master/$prevCommit/$file > /dev/null
+        then
+            # Here CD != Index.
+            echo "legit-rm: error: '$file' in index is different to both working file and repository"
+            exit 1
+        fi
+    fi
+done

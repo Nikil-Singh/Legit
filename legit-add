@@ -18,7 +18,15 @@ fi
 # Check if all arguements are valid files.
 for file in $@
 do
-    if ! test -e $file
+    # If file exists in index but not current directory.
+    if test -e .legit/.index/master/$file
+    then
+        if ! test -e $file
+        then
+            # Since it is no longer in the current directory.
+            rm .legit/.index/master/$file
+        fi
+    elif ! test -e $file
     then
         echo "legit-add: error: can not open '$file'"
         exit 1
@@ -28,5 +36,9 @@ done
 # Adds the files to the index.
 for file in $@
 do
-    cp $file ".legit/.index/master"
+    # Checks if file exists to account for file that got deleted.
+    if test -e $file
+    then
+        cp $file ".legit/.index/master"
+    fi
 done
