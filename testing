@@ -3,16 +3,30 @@
 
 sh legit-init
 #Initialized empty legit repository in .legit
-echo 1 >a
-echo 2 >b
-echo 3 >c
-sh legit-add a b c
-sh legit-commit -m "first commit"
+touch a b c d e f g h
+sh legit-add a b c d e f
+sh legit-commit -m 'first commit'
 #Committed as commit 0
-echo 4 >>a
-echo 5 >>b
-echo 6 >>c
-echo 7 >d
-echo 8 >e
-sh legit-add b c d
-echo 9 >b
+echo hello >a
+echo hello >b
+echo hello >c
+sh legit-add a b
+echo world >a
+rm d
+sh legit-rm e
+sh legit-add g
+
+
+# a - file changed, different changes staged for commit
+# b - file changed, changes staged for commit
+# c - file changed, changes not staged for commit
+# d - file deleted
+# e - deleted
+# f - same as repo
+# g - added to index
+# h - untracked
+# legit-add - untracked
+# legit-commit - untracked
+# legit-init - untracked
+# legit-rm - untracked
+# legit-status - untracked

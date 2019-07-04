@@ -12,3 +12,4 @@ Date        Start   Stop    Activity   Comments
 02/07/19    20:00   21:00   Coding     Continued experimenting with reference implementation and added more for checking differences in files.
 04/07/19    13:00   14:00   Coding     Finished up legit-rm which can check for differences between files now as well.
 04/07/19    17:00   19:00   Debugging  Fixed up errors that appeared in legit-commit and legit-rm.
+04/07/19    20:00   21:00   Coding     Experimented with reference implementation to note down the nature of legit-status, and implemented basic error checking for it.
