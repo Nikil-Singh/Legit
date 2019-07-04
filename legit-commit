@@ -57,7 +57,7 @@ numFiles=`ls -l .legit/.index/master/| egrep -c ^-`
 numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
 
 # Checks if number of files in index is 0, then output error  message.
-if test $numFiles -eq 0
+if test $numFiles -eq 0 -a $numCommits -eq 0
 then
     echo "nothing to commit"
     exit 1
@@ -89,7 +89,14 @@ then
     prevCommit=`expr $numCommits - 1`
 
     # Gets number of files in previous commit.
-    numFilesPrev=`ls -l .legit/.prev/master/$prevCommit/*| egrep -c ^-`
+    numFilesPrev=`ls -l .legit/.prev/master/$prevCommit/| egrep -c ^-`
+
+    # Checks if number of files in index and previous commits is 0.
+    if test $numFiles -eq 0 -a $numFilesPrev -eq 0
+    then
+        echo "nothing to commit"
+        exit 1
+    fi
 
     # Checks if same number of files exist in previous commits and index, then checks
     # if all the files are the same and if their contents have changed. If the
@@ -109,6 +116,8 @@ then
                 then
                     dif=1
                 fi
+            else
+                dif=1
             fi
         done
         # If files don't have different content then it outputs an error message.
@@ -125,7 +134,10 @@ mkdir .legit/.prev/master/$numCommits
 # Starts copying over the contents of index to a folder for version control.
 for file in .legit/.index/master/*
 do
-    cp $file ".legit/.prev/master/$numCommits"
+    if test -e $file
+    then
+        cp $file ".legit/.prev/master/$numCommits"
+    fi
 done
 
 # Updates the commit log.

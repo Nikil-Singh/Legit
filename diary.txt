@@ -8,4 +8,7 @@ Date        Start   Stop    Activity   Comments
 28/06/19    12:00   13:30   Coding     Made some changes to legit-commit to take in -a flag.
 28/06/19    18:00   20:00   Coding     Fully implemented legit-commit [-a] and added error checking to all legit files to ensure the .legit folder exists.
 30/06/19    11:00   12:00   Debugging  Realised flags could appear in any order on reference implementation, so adjusted code to allow for that.
-30/06/19    13:00
+30/06/19    13:00   15:00   Coding     Added functionality to check for differences in different files.
+02/07/19    20:00   21:00   Coding     Continued experimenting with reference implementation and added more for checking differences in files.
+04/07/19    13:00   14:00   Coding     Finished up legit-rm which can check for differences between files now as well.
+04/07/19    17:00   19:00   Debugging  Fixed up errors that appeared in legit-commit and legit-rm.
