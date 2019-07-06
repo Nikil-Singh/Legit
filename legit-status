@@ -21,55 +21,63 @@ files=""    # Variable to hold all files.
 found=0     # Variable for whether a file has been seen.
 # Gets all the files from current directory, index and the previous commit.
 # Checks all files in current directory.
-for file in *
-do
-    # Checks if file is not a directory.
-    if ! test -d $file
-    then
-        found=0
-        # Checks if file is already held in $files.
-        for tmpFile in $files
-        do
-            # Checks for duplicate files.
-            if test $tmpFile = $file
-            then
-                found=1
-            fi
-        done
-        # If the file is not a duplicate file.
-        if test $found -eq 0
+numFiles=`ls -l | egrep -c ^-`
+if test $numFiles -ne 0
+then
+    for file in *
+    do
+        # Checks if file is not a directory.
+        if ! test -d $file
         then
-            # Concatenates the filename to $files separated by a space.
-            files=`echo $files $file`
+            found=0
+            # Checks if file is already held in $files.
+            for tmpFile in $files
+            do
+                # Checks for duplicate files.
+                if test $tmpFile = $file
+                then
+                    found=1
+                fi
+            done
+            # If the file is not a duplicate file.
+            if test $found -eq 0
+            then
+                # Concatenates the filename to $files separated by a space.
+                files=`echo $files $file`
+            fi
         fi
-    fi
-done
+    done
+fi
 
 found=0
 # Checks all files in index
-for file in .legit/.index/master/*
-do
-    # Checks if file is not a directory.
-    if ! test -d $file
-    then
-        found=0
-        # Checks if file is already held in $files.
-        for tmpFile in $files
-        do
-            modifiedFile=`echo $file | sed 's/.*[/]//g'`
-            # Checks for duplicate files.
-            if test $tmpFile = $modifiedFile
-            then
-                found=1
-            fi
-        done
-        # If the file is not a duplicate file.
-        if test $found -eq 0
+numFiles=`ls -l .legit/.index/master| egrep -c ^-`
+if test $numFiles -ne 0
+then
+    for file in .legit/.index/master/*
+    do
+        # Checks if file is not a directory.
+        modifiedFile=`echo $file | sed 's/.*[/]//g'`
+        if ! test -d $file
         then
-            files=`echo $files $modifiedFile`
+            found=0
+            # Checks if file is already held in $files.
+            for tmpFile in $files
+            do
+                # Checks for duplicate files.
+                if test $tmpFile = $modifiedFile
+                then
+                    found=1
+                fi
+            done
+            # If the file is not a duplicate file.
+            if test $found -eq 0
+            then
+                files=`echo $files $modifiedFile`
+            fi
         fi
-    fi
-done
+    done
+fi
 
 found=0
 # Gets number of previous commits.
@@ -78,30 +86,33 @@ numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
 # from 0.
 prevCommit=`expr $numCommits - 1`
 # Checks all files in previous commit.
-for file in .legit/.prev/master/$prevCommit/*
-do
-    # Checks if file is not a directory.
-    if ! test -d $file
-    then
-        found=0
-        # Checks if file is already held in $files.
-        for tmpFile in $files
-        do
-            modifiedFile=`echo $file | sed 's/.*[/]//g'`
-            # Checks for duplicate files.
-            if test $tmpFile = $modifiedFile
-            then
-                found=1
-            fi
-        done
-        # If the file is not a duplicate file.
-        if test $found -eq 0
+numFiles=`ls -l .legit/.prev/master/$prevCommit| egrep -c ^-`
+if test $numFiles -ne 0
+then
+    for file in .legit/.prev/master/$prevCommit/*
+    do
+        # Checks if file is not a directory.
+        modifiedFile=`echo $file | sed 's/.*[/]//g'`
+        if ! test -d $file
         then
-            files=`echo $files $modifiedFile`
+            found=0
+            # Checks if file is already held in $files.
+            for tmpFile in $files
+            do
+                # Checks for duplicate files.
+                if test $tmpFile = $modifiedFile
+                then
+                    found=1
+                fi
+            done
+            # If the file is not a duplicate file.
+            if test $found -eq 0
+            then
+                files=`echo $files $modifiedFile`
+            fi
         fi
-    fi
-done
-
+    done
+fi
 # Sorts all the files into alphabetical order.
 # Creates a tmpFile to hold alphabetically sorted files.
 touch .legit/tmpFile
@@ -120,7 +131,6 @@ rm .legit/tmpFile
 
 # Compare the files in current directory, index and previous commit, then outputs
 # the appropriate message for that file describing its status.
-
 for file in $files
 do
     # If file is in current directory, index and previous commit.
