@@ -30,3 +30,20 @@ sh legit-add g
 # legit-init - untracked
 # legit-rm - untracked
 # legit-status - untracked
+
+# If prevCommit != index != cd || prevCommit == cd != index
+    # a - file changed, different changes staged for commit
+# If prevCommit != index = cd
+    # b - file changed, changes staged for commit
+# If prevCommit = index != cd
+    # c - file changed, changes not staged for commit
+# File in index = prevCommit but deleted in cd.
+    # d - file deleted
+# File in prevCommit but deleted in index and cd.
+    # e - deleted
+# if prevCommit = index = cd
+    # f - same as repo
+# File in index = cd but not in commit.
+    # g - added to index
+# Not in prevRepo or index, only in cd.
+    # h - untracked

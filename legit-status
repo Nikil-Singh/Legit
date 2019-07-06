@@ -121,19 +121,66 @@ rm .legit/tmpFile
 # Compare the files in current directory, index and previous commit, then outputs
 # the appropriate message for that file describing its status.
 
-# If prevCommit != index != cd
-    # a - file changed, different changes staged for commit
-# If prevCommit != index = cd
-    # b - file changed, changes staged for commit
-# If prevCommit = index != cd
-    # c - file changed, changes not staged for commit
-# File in index = prevCommit but deleted in cd.
-    # d - file deleted
-# File in prevCommit but deleted in index and cd.
-    # e - deleted
-# if prevCommit = index = cd
-    # f - same as repo
-# File in index = cd but not in commit.
-    # g - added to index
-# Not in prevRepo or index, only in cd.
-    # h - untracked
+for file in $files
+do
+    # If file is in current directory, index and previous commit.
+    if test -e $file -a -e .legit/.index/master/$file -a -e .legit/.prev/master/$prevCommit/$file
+    then
+        # Checks if file in index is NOT the same as file in current directory.
+        if ! diff .legit/.index/master/$file $file > /dev/null
+        then
+            # Checks if file in index is NOT the same as file in previous commit.
+            if ! diff .legit/.index/master/$file .legit/.prev/master/$prevCommit/$file > /dev/null
+            then
+                # Here file in Index != Current Directory [== || !=] Previous Commit.
+                echo "$file - file changed, different changes staged for commit"
+            else
+                # Here file in Current Directory != Index == Previous Commit.
+                echo "$file - file changed, changes not staged for commit"
+            fi
+        else
+            # Checks if file in index is NOT the same as file in previous commit.
+            if ! diff .legit/.index/master/$file .legit/.prev/master/$prevCommit/$file > /dev/null
+            then
+                # Here file in Index == Current Directory != Previous Commit.
+                echo "$file - file changed, changes staged for commit"
+            else
+                # Here file in Index == Current Directory == Previous Commit.
+                echo "$file - same as repo"
+            fi
+        fi
+
+    # If file is in current directory and index.
+    elif test -e $file -a -e .legit/.index/master/$file
+    then
+        echo "$file - added to index"
+
+    # If file is in index and previous commit.
+    elif test -e .legit/.index/master/$file -a -e .legit/.prev/master/$prevCommit/$file
+    then
+        # Checks if file in index is NOT the same as file in previous commit.
+        if ! diff .legit/.index/master/$file .legit/.prev/master/$prevCommit/$file > /dev/null
+        then
+            # Here file in Index != Previous Commit.
+            echo "$file - file deleted, different changes staged for commit"
+        else
+            # Here file in Index == Previous Commit.
+            echo "$file - file deleted"
+        fi
+
+    # If file is in current directory only.
+    elif test -e $file
+    then
+        echo "$file - untracked"
+
+    # If file is in index only.
+    elif test -e .legit/.index/master/$file
+    then
+        echo "$file - added to index"
+
+    # If file is in previous commmit only.
+    elif test -e .legit/.prev/master/$prevCommit/$file
+    then
+        echo "$file - deleted"
+    fi
+done
