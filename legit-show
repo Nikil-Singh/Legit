@@ -8,6 +8,9 @@ then
     exit 1
 fi
 
+# Gets the current branch.
+branch=`cat .legit/branch.txt`
+
 # Checks if no arguements are given.
 if test $# -eq 0
 then
@@ -31,7 +34,7 @@ fi
 
 # Gets the commit number and directory.
 commitNum=`echo $1 | sed 's/:.*$//g'`
-commitDir=".legit/.prev/master/$commitNum"
+commitDir=".legit/.prev/$branch/$commitNum"
 
 # Checks if the commit number is valid.
 if ! test -d $commitDir
@@ -48,10 +51,10 @@ message=""
 # in index.
 if test -z $commitNum
 then
-    fileDir=".legit/.index/master/$file"
+    fileDir=".legit/.index/$branch/$file"
     message="index"
 else
-    fileDir=".legit/.prev/master/$commitNum/$file"
+    fileDir=".legit/.prev/$branch/$commitNum/$file"
     message="commit $commitNum"
 fi
 

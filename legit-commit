@@ -8,6 +8,9 @@ then
     exit 1
 fi
 
+# Gets the current branch.
+branch=`cat .legit/branch.txt`
+
 # Checks if the correct flags are given in the correct order based on how many
 # arguements are given. Also gets message based on the number of arguements given.
 # Also check if correct number of arguements are given. The following sets
@@ -52,9 +55,9 @@ then
 fi
 
 # Gets number of files to be added.
-numFiles=`ls -l .legit/.index/master/| egrep -c ^-`
+numFiles=`ls -l .legit/.index/$branch/| egrep -c ^-`
 # Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
+numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
 
 # Checks if number of files in index is 0, then output error  message.
 if test $numFiles -eq 0 -a $numCommits -eq 0
@@ -67,7 +70,7 @@ fi
 # moves the required files over.
 if test $# -eq 3
 then
-    for file in .legit/.index/master/*
+    for file in .legit/.index/$branch/*
     do
         tmpFilename=`echo $file | sed 's/^.*[/]//g'`
         if test -e $tmpFilename
@@ -82,14 +85,14 @@ then
 fi
 
 # Checks if prevCommit is a negative, in which case there are no previous commits.
-if ls -l .legit/.prev/master/| egrep -c ^d > /dev/null
+if ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
     # Sets previous commit number to be one less than total commits as they start
     # from 0.
     prevCommit=`expr $numCommits - 1`
 
     # Gets number of files in previous commit.
-    numFilesPrev=`ls -l .legit/.prev/master/$prevCommit/| egrep -c ^-`
+    numFilesPrev=`ls -l .legit/.prev/$branch/$prevCommit/| egrep -c ^-`
 
     # Checks if number of files in index and previous commits is 0.
     if test $numFiles -eq 0 -a $numFilesPrev -eq 0
@@ -105,14 +108,14 @@ then
     then
         dif=0
         # Cycles through all files in previous commit.
-        for file in .legit/.prev/master/$prevCommit/*
+        for file in .legit/.prev/$branch/$prevCommit/*
         do
             fileName=`echo $file | sed 's/^.*[/]//g'`
             # Checks if file exists.
-            if test -e .legit/.index/master/$fileName
+            if test -e .legit/.index/$branch/$fileName
             then
                 # Checks if files have different content.
-                if ! diff .legit/.index/master/$fileName $file > /dev/null
+                if ! diff .legit/.index/$branch/$fileName $file > /dev/null
                 then
                     dif=1
                 fi
@@ -129,17 +132,17 @@ then
     fi
 fi
 # Creates directory for commit, where commits begin from 0.
-mkdir .legit/.prev/master/$numCommits
+mkdir .legit/.prev/$branch/$numCommits
 
 # Starts copying over the contents of index to a folder for version control.
-for file in .legit/.index/master/*
+for file in .legit/.index/$branch/*
 do
     if test -e $file
     then
-        cp $file ".legit/.prev/master/$numCommits"
+        cp $file ".legit/.prev/$branch/$numCommits"
     fi
 done
 
 # Updates the commit log.
-echo "$numCommits $tmpMessage" >> .legit/.prev/master/commitLog.txt
+echo "$numCommits $tmpMessage" >> .legit/.prev/$branch/commitLog.txt
 echo "Committed as commit $numCommits"

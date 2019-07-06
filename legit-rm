@@ -8,10 +8,13 @@ then
     exit 1
 fi
 
+# Gets the current branch.
+branch=`cat .legit/branch.txt`
+
 # Checks if repository has any commits.
 # Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
-if ! ls -l .legit/.prev/master/| egrep -c ^d > /dev/null
+numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
+if ! ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
     echo "legit-rm: error: your repository does not have any commits yet"
     exit 1
@@ -122,7 +125,7 @@ fi
 # Check if file is in .legit repository.
 for file in $files
 do
-    if ! test -e .legit/.index/master/$file
+    if ! test -e .legit/.index/$branch/$file
     then
         echo "legit-rm: error: '$file' is not in the legit repository"
         exit 1
@@ -130,7 +133,7 @@ do
 done
 
 # Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/master/| egrep -c ^d`
+numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
 prevCommit=`expr $numCommits - 1`
 
 # If force flag is not given.
@@ -140,13 +143,13 @@ then
     for file in $files
     do
         # Checks if file is in current directory and previos commit.
-        if test -e $file -a -e .legit/.prev/master/$prevCommit/$file
+        if test -e $file -a -e .legit/.prev/$branch/$prevCommit/$file
         then
             # Checks if file in current directory is NOT the same as the one in index.
-            if ! diff $file .legit/.index/master/$file > /dev/null
+            if ! diff $file .legit/.index/$branch/$file > /dev/null
             then
                 # Checks if file in index is NOT the same as previous commit.
-                if ! diff .legit/.index/master/$file .legit/.prev/master/$prevCommit/$file > /dev/null
+                if ! diff .legit/.index/$branch/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
                 then
                     # Here file in Index != Previous Commit && CD
                     echo "legit-rm: error: '$file' in index is different to both working file and repository"
@@ -162,7 +165,7 @@ then
             # If file in current directory is the same as the one in index.
             else
                 # Checks if file in current directory is NOT the same as previous commit.
-                if ! diff $file .legit/.prev/master/$prevCommit/$file > /dev/null
+                if ! diff $file .legit/.prev/$branch/$prevCommit/$file > /dev/null
                 then
                     if test "$cFlag" != "--cached"
                     then
@@ -176,13 +179,13 @@ then
         elif test -e $file
         then
             # Checks if file in index is NOT the same as file in current directory.
-            if ! diff $file .legit/.index/master/$file > /dev/null
+            if ! diff $file .legit/.index/$branch/$file > /dev/null
             then
                 # Here CD != Index.
                 echo "legit-rm: error: '$file' in index is different to both working file and repository"
                 exit 1
             # Cheks if file in index is the same as current directory and non-existent in previous commit.
-            elif diff $file .legit/.index/master/$file > /dev/null
+            elif diff $file .legit/.index/$branch/$file > /dev/null
             then
                 # Here file in CD == Index != Previous Commit.
                 if test "$cFlag" != "--cached"
@@ -205,8 +208,8 @@ do
     fi
 
     # For deleting file in index.
-    if test -e .legit/.index/master/$file
+    if test -e .legit/.index/$branch/$file
     then
-        rm .legit/.index/master/$file
+        rm .legit/.index/$branch/$file
     fi
 done

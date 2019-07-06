@@ -19,6 +19,8 @@ else
     mkdir .legit/.prev                      # Holds all files based on commit number.
     mkdir .legit/.prev/master               # Holds all versions of master.
     touch .legit/.prev/master/commitLog.txt # Generates text file to log commits.
+    touch .legit/branch.txt                 # Generates text file to hold current branch name.
+    echo  "master" > .legit/branch.txt      # Enters current branch into file.
 
     echo "Initialized empty legit repository in .legit"
 fi
