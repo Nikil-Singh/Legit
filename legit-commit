@@ -144,5 +144,5 @@ do
 done
 
 # Updates the commit log.
-echo "$numCommits $tmpMessage" >> .legit/.prev/$branch/commitLog.txt
+echo "$numCommits $tmpMessage" >> .legit/.prev/commitLog.txt
 echo "Committed as commit $numCommits"

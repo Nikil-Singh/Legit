@@ -12,12 +12,12 @@ fi
 branch=`cat .legit/branch.txt`
 
 # Checks if commit log is empty.
-if ! test -s .legit/.prev/$branch/commitLog.txt
+if ! test -s .legit/.prev/commitLog.txt
 then
     echo "legit-log: error: your repository does not have any commits yet"
     exit 1
 fi
 
 # Prints out the commit log for that branch.
-file=.legit/.prev/$branch/commitLog.txt
+file=.legit/.prev/commitLog.txt
 tac $file

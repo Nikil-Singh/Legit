@@ -18,7 +18,7 @@ else
     mkdir .legit/.index/master              # Holds all the master branch.
     mkdir .legit/.prev                      # Holds all files based on commit number.
     mkdir .legit/.prev/master               # Holds all versions of master.
-    touch .legit/.prev/master/commitLog.txt # Generates text file to log commits.
+    touch .legit/.prev/commitLog.txt        # Generates text file to log commits.
     touch .legit/branch.txt                 # Generates text file to hold current branch name.
     echo  "master" > .legit/branch.txt      # Enters current branch into file.
 

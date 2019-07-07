@@ -1,0 +1,129 @@
+#!/usr/bin/perl -w
+# Created by Nikil Singh z5209322
+
+# Check if a .legit directory has been initialised.
+opendir(DIR,".legit") or die "legit-branch: error: no .legit directory containing legit repository exists\n";
+closedir(DIR);
+
+# Checks if any previous commit have been made.
+open F, '<', ".legit/branch.txt";
+@lines = <F>;
+$currBranch = $lines[0];
+chomp $currBranch;
+close F;
+opendir(DIR,".legit/.prev/$currBranch/0") or die "legit-branch: error: your repository does not have any commits yet\n";
+closedir(DIR);
+
+# Checks if no arguements are given.
+if ($#ARGV == -1) {
+    # Displays all branches in alphabetical order.
+    opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
+    while (my $dir = readdir(DIR)) {
+        if ($dir ne "." && $dir ne "..") {
+            push @branches, $dir;
+        }
+    }
+    closedir(DIR);
+
+    # Sorts branches in alphabetical order.
+    @branches = sort @branches;
+    foreach my $branch (@branches) {
+        print "$branch\n";
+    }
+
+# Checks if one arguement is given.
+} elsif ($#ARGV == 0) {
+    $tmpName = $ARGV[0];
+    # Checks if the one arguement given is "-d".
+    if ($ARGV[0] eq "-d") {
+        die "legit-branch: error: branch name required\n";
+    }
+
+    # Checks if a valid flag was given.
+    if ($ARGV[0] =~ m/^-.*$/) {
+        die "usage: legit-branch [-d] <branch>\n";
+    }
+
+    # Checks if a valid branch name was given.
+    if (!($ARGV[0] =~ m/^[A-Za-z][A-Za-z0-9_-]*$/) && !($ARGV[0] =~ m/^[0-9]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$/)) {
+        die "legit-branch: error: invalid branch name '$tmpName'\n";
+    }
+
+    # Checks if branch already exists.
+    opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
+    while (my $dir = readdir(DIR)) {
+        if ($dir eq $ARGV[0]) {
+            die "legit-branch: error: branch '$tmpName' already exists\n";
+        }
+    }
+    closedir(DIR);
+
+    # Creates the required directories(branches) and copies the appropriate files over.
+    use File::Copy qw(copy);
+    # For index.
+    mkdir ".legit/.index/$tmpName";
+    opendir(DIR, ".legit/.index/$currBranch");
+    while (my $file = readdir(DIR)) {
+        copy(".legit/.index/$currBranch/$file", ".legit/.index/$tmpName/");
+    }
+    closedir(DIR);
+
+    # For all previous commits.
+    mkdir ".legit/.prev/$tmpName";
+    opendir(DIR, ".legit/.prev/$currBranch");
+    while (my $prevCommit = readdir(DIR)) {
+        if ($prevCommit ne "." && $prevCommit ne "..") {
+            opendir(COMMIT, ".legit/.prev/$currBranch/$prevCommit/");
+            mkdir ".legit/.prev/$tmpName/$prevCommit";
+            while (my $file = readdir(DIR)) {
+                copy(".legit/.prev/$currBranch/$prevCommit/$file", ".legit/.prev/$tmpName/$prevCommit/");
+            }
+            closedir(COMMIT);
+        }
+    }
+    closedir(DIR);
+
+# Checks if two arguements are given.
+} elsif ($#ARGV == 1) {
+    $tmpName = $ARGV[1];
+    # Checks if a valid flag was given.
+    if ($ARGV[0] ne "-d") {
+        die "usage: legit-branch [-d] <branch>\n";
+    }
+
+    # Checks if a valid branch name was given.
+    if (!($ARGV[1] =~ m/^[A-Za-z][A-Za-z0-9_-]*$/) && !($ARGV[1] =~ m/^[0-9]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$/)) {
+        die "legit-branch: error: invalid branch name '$tmpName'\n";
+    }
+
+    # Checks if branch name is master.
+    if ($tmpName eq "master") {
+        die "legit-branch: error: can not delete branch 'master'\n";
+    }
+
+    # Checks if branch exists.
+    $found = 0;
+    opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
+    while (my $dir = readdir(DIR)) {
+        if ($dir eq $ARGV[1]) {
+            $found = 1;
+        }
+    }
+
+    # If the branch is not found.
+    if ($found == 0) {
+        die "legit-branch: error: branch '$tmpName' does not exist\n";
+    }
+
+    # Check for unmerged changes.
+
+    # Deletes the branch.
+    rmdir ".legit/.index/$tmpName";
+    rmdir ".legit/.prev/$tmpName";
+
+    print "Deleted branch '$tmpName'\n";
+# Checks if more than two are given.
+} else {
+    # Too many arguements were given.
+    die "usage: legit-branch [-d] <branch>\n";
+}
