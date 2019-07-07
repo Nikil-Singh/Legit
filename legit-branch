@@ -118,8 +118,8 @@ if ($#ARGV == -1) {
     # Check for unmerged changes.
 
     # Deletes the branch.
-    rmdir ".legit/.index/$tmpName";
-    rmdir ".legit/.prev/$tmpName";
+    use File::Path qw(remove_tree);
+    remove_tree(".legit/.index/$tmpName", ".legit/.prev/$tmpName");
 
     print "Deleted branch '$tmpName'\n";
 # Checks if more than two are given.
