@@ -163,7 +163,7 @@ if ($#ARGV == -1) {
 
     # Deletes the branch.
     use File::Path qw(remove_tree);
-    remove_tree(".legit/.index/$tmpName", ".legit/.prev/$tmpName");
+    remove_tree(".legit/.index/$tmpName", ".legit/.prev/$tmpName", ".legit/.current/$tmpName");
 
     print "Deleted branch '$tmpName'\n";
 # Checks if more than two are given.

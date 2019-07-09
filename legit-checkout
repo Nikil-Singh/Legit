@@ -21,133 +21,87 @@ if ($#ARGV != 0) {
     die "usage: legit-checkout <branch>\n";
 }
 
+# Sets branch name to change to, into an easier to read variable name.
+$branch = $ARGV[0];
+
 # Checks if branch to checkout to exists.
 $found = 0;
 opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
-while (my $dir = readdir(DIR)) {
-    if ($dir eq $ARGV[0]) {
+while (my $br = readdir(DIR)) {
+    if ($br eq $branch) {
         $found = 1;
     }
 }
 closedir(DIR);
-$branch = $ARGV[0];
+
 # If the branch is not found.
 if ($found == 0) {
     die "legit-checkout: error: unknown branch '$branch'\n";
 }
 
-# Checks if on the same branch.
+# Checks if branch to checkout to is the current branch.
 if ($currBranch eq $branch) {
     die "Already on '$branch'\n";
 }
 
-# Gets all tracked filenames for current directory for the current branch.
-# Gets filenames from index.
+# Gets all tracked filenames for the current branch.
+# Gets all filenames from the index for current branch.
 opendir(DIR, ".legit/.index/$currBranch");
 while (my $file = readdir(DIR)) {
     if (-f ".legit/.index/$currBranch/$file") {
-        push @currentTrackedFiles, $file;
+        # @oldTrackedFiles holds filenames from current branch.
+        push @oldTrackedFiles, $file;
     }
 }
 closedir(DIR);
 
-# Gets the number for the last commit in current branch.
+# Gets number of last commit for current branch.
 open F, '<', ".legit/.prev/$currBranch/branchLog.txt";
 @lines = <F>;
-foreach $line (@lines) {
-    chomp $line;
-    $lastLine = $line;
-}
-# Removes all non-digit characters from string.
-$lastLine =~ s/\D//g;
+$prevCommit = $lines[$#lines];
+$prevCommit =~ s/ .*//;
+chomp $prevCommit;
 close F;
 
-# Gets filenames from previous commit.
-opendir(DIR, ".legit/.prev/$currBranch/$lastLine");
+# Gets all filenames from previous commit in the current branch.
+opendir(DIR, ".legit/.commits/$prevCommit");
 while (my $file = readdir(DIR)) {
-    # ADD SOMETHING TO HANDLE EMPTY TRACKEDFILES
-    if (!(grep(/^$file$/,@currentTrackedFiles)) && -f ".legit/.prev/$currBranch/$lastLine/$file") {
-        # If file wasn't already in tracked files.
-        push @currentTrackedFiles, $file;
+    if (-f ".legit/.commits/$prevCommit/$file") {
+        if (!(grep(/^$file$/,@oldTrackedFiles))) {
+            # If file wasn't already in tracked files.
+            push @oldTrackedFiles, $file;
+        }
     }
 }
 closedir(DIR);
 
-# Gets all tracked filenames for current directory for the branch being checked
-# out to.
-# Gets filenames from index.
+# Gets all tracked filenames from new branch being checked out to.
+# Gets all filenames from index for new branch.
 opendir(DIR, ".legit/.index/$branch");
 while (my $file = readdir(DIR)) {
     if (-f ".legit/.index/$branch/$file") {
+        # @newTrackedFiles holds filenames from new branch.
         push @newTrackedFiles, $file;
     }
 }
 closedir(DIR);
 
-# Gets the number for the last commit in current branch.
+# Gets number of last commit for current branch.
 open F, '<', ".legit/.prev/$branch/branchLog.txt";
 @lines = <F>;
-foreach $line (@lines) {
-    chomp $line;
-    $lastLine = $line;
-}
-# Removes all non-digit characters from string.
-$lastLine =~ s/\D//g;
+$prevCommit = $lines[$#lines];
+$prevCommit =~ s/ .*//;
+chomp $prevCommit;
 close F;
 
-# Gets filenames from previous commit.
-opendir(DIR, ".legit/.prev/$branch/$lastLine");
+# Gets all filenames from previous commit in the new branch.
+opendir(DIR, ".legit/.commits/$prevCommit");
 while (my $file = readdir(DIR)) {
-    # ADD SOMETHING TO HANDLE EMPTY TRACKEDFILES
-    if (!(grep(/^$file$/,@newTrackedFiles)) && -f ".legit/.prev/$branch/$lastLine/$file") {
-        # If file wasn't already in tracked files.
-        push @newTrackedFiles, $file;
+    if (-f ".legit/.commits/$prevCommit/$file") {
+        if (!(grep(/^$file$/,@newTrackedFiles))) {
+            # If file wasn't already in tracked files.
+            push @newTrackedFiles, $file;
+        }
     }
 }
 closedir(DIR);
-
-use File::Copy qw(copy);
-# Updates current directory folder for current branch for all tracked files.
-opendir(DIR, ".legit/.current/$currBranch");
-while (my $file = readdir(DIR)) {
-    if (grep(/^$file$/,@currentTrackedFiles)) {
-        # Updates the current directory for the current branch.
-        copy($file, ".legit/.current/$currBranch/");
-    }
-}
-closedir(DIR);
-
-# Updates current directory locally to that of the branch being changed to.
-# Gets path for current directory locally.
-use Cwd qw(getcwd);
-$directory = getcwd;
-# Copies files that are being tracked.
-opendir(DIR, ".legit/.current/$branch/");
-while (my $file = readdir(DIR)) {
-    if (grep(/^$file$/,@newTrackedFiles)) {
-        print "copy: $file\n";
-        #copy(".legit/.current/$branch/$file","$directory");
-    }
-}
-closedir(DIR);
-
-# Removes files that aren't being tracked by previous branch, but not
-# current branch.
-opendir(DIR, "$directory/");
-while (my $file = readdir(DIR)) {
-    if ((grep(/^$file$/,@currentTrackedFiles)) && !(grep(/^$file$/,@newTrackedFiles))) {
-        #rm $file;
-        print "rm: $file\n";
-    }
-}
-closedir(DIR);
-
-# Switches branches.
-open F, '>', ".legit/branch.txt" or die "legit-branch: error: something went wrong with legit-init\n.";
-print F "$branch";
-close F;
-
-print "Switched to branch '$branch'\n";
-
-# Once new branch is created, u can change to branch and modify files then switch back to branch it was derived from, this applies recursively.
-# This no longer applies after the first commit for that branch.
