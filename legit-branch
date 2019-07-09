@@ -5,12 +5,14 @@
 opendir(DIR, ".legit") or die "legit-branch: error: no .legit directory containing legit repository exists\n";
 closedir(DIR);
 
-# Checks if any previous commit have been made.
+# Gets the current branch.
 open F, '<', ".legit/branch.txt";
 @lines = <F>;
 $currBranch = $lines[0];
 chomp $currBranch;
 close F;
+
+# Checks if any previous commit have been made.
 opendir(DIR,".legit/.prev/$currBranch/0") or die "legit-branch: error: your repository does not have any commits yet\n";
 closedir(DIR);
 
@@ -64,11 +66,24 @@ if ($#ARGV == -1) {
     mkdir ".legit/.index/$tmpName";
     opendir(DIR, ".legit/.index/$currBranch");
     while (my $file = readdir(DIR)) {
-        copy(".legit/.index/$currBranch/$file", ".legit/.index/$tmpName/");
-        # Keeps track of files that are being tracked by legit.
-        push @trackedFiles, $file;
+        if (-f ".legit/.index/$currBranch/$file") {
+            copy(".legit/.index/$currBranch/$file", ".legit/.index/$tmpName/");
+            # Keeps track of files that are being tracked by legit.
+            push @trackedFiles, $file;
+        }
     }
     closedir(DIR);
+
+    # Gets the number for the last commit in current branch.
+    open F, '<', ".legit/.prev/$currBranch/branchLog.txt";
+    @lines = <F>;
+    foreach $line (@lines) {
+        chomp $line;
+        $lastLine = $line;
+    }
+    # Removes all non-digit characters from string.
+    $lastLine =~ s/\D//g;
+    close F;
 
     # For all previous commits.
     mkdir ".legit/.prev/$tmpName";
@@ -78,16 +93,24 @@ if ($#ARGV == -1) {
             opendir(COMMIT, ".legit/.prev/$currBranch/$prevCommit");
             mkdir ".legit/.prev/$tmpName/$prevCommit";
             while (my $file = readdir(COMMIT)) {
-                copy(".legit/.prev/$currBranch/$prevCommit/$file", ".legit/.prev/$tmpName/$prevCommit/");
-                # Checks if file is being tracked, and if not already in array,
-                # then adds to the array.
-                if (!(grep(/^$file$/,@trackedFiles))) {
-                    push @trackedFiles, $file
+                if (-f ".legit/.prev/$currBranch/$prevCommit/$file") {
+                    copy(".legit/.prev/$currBranch/$prevCommit/$file", ".legit/.prev/$tmpName/$prevCommit/");
+                    # Checks if file is being tracked, and if not already in array,
+                    # then adds to the array. Considers files in index and previous
+                    # commit.
+
+                    # ADD SOMETHING TO HANDLE EMPTY TRACKEDFILES
+                    if (!(grep(/^$file$/,@trackedFiles)) && $prevCommit eq $lastLine) {
+                        # If file wasn't already in tracked files.
+                        push @trackedFiles, $file;
+                    }
                 }
             }
             closedir(COMMIT);
         }
     }
+    # Copies over the branch log.
+    copy(".legit/.prev/$currBranch/branchLog.txt",".legit/.prev/$tmpName/");
     closedir(DIR);
 
 
@@ -96,7 +119,7 @@ if ($#ARGV == -1) {
     opendir(DIR, ".");
     while (my $file = readdir(DIR)) {
         # Checks if the file is being tracked.
-        if (grep(/^$file$/,@trackedFiles)) {
+        if (grep(/^$file$/,@trackedFiles) && -f $file) {
             copy($file, ".legit/.current/$tmpName/");
             # Updates the current directory for the current branch.
             copy($file, ".legit/.current/$currBranch/");
