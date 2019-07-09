@@ -2,7 +2,7 @@
 # Created by Nikil Singh z5209322
 
 # Check if a .legit directory has been initialised.
-opendir(DIR,".legit") or die "legit-branch: error: no .legit directory containing legit repository exists\n";
+opendir(DIR, ".legit") or die "legit-branch: error: no .legit directory containing legit repository exists\n";
 closedir(DIR);
 
 # Checks if any previous commit have been made.
@@ -65,6 +65,8 @@ if ($#ARGV == -1) {
     opendir(DIR, ".legit/.index/$currBranch");
     while (my $file = readdir(DIR)) {
         copy(".legit/.index/$currBranch/$file", ".legit/.index/$tmpName/");
+        # Keeps track of files that are being tracked by legit.
+        push @trackedFiles, $file;
     }
     closedir(DIR);
 
@@ -72,13 +74,32 @@ if ($#ARGV == -1) {
     mkdir ".legit/.prev/$tmpName";
     opendir(DIR, ".legit/.prev/$currBranch");
     while (my $prevCommit = readdir(DIR)) {
-        if ($prevCommit ne "." && $prevCommit ne "..") {
-            opendir(COMMIT, ".legit/.prev/$currBranch/$prevCommit/");
+        if ($prevCommit ne "." && $prevCommit ne ".." && -d ".legit/.prev/$currBranch/$prevCommit") {
+            opendir(COMMIT, ".legit/.prev/$currBranch/$prevCommit");
             mkdir ".legit/.prev/$tmpName/$prevCommit";
-            while (my $file = readdir(DIR)) {
+            while (my $file = readdir(COMMIT)) {
                 copy(".legit/.prev/$currBranch/$prevCommit/$file", ".legit/.prev/$tmpName/$prevCommit/");
+                # Checks if file is being tracked, and if not already in array,
+                # then adds to the array.
+                if (!(grep(/^$file$/,@trackedFiles))) {
+                    push @trackedFiles, $file
+                }
             }
             closedir(COMMIT);
+        }
+    }
+    closedir(DIR);
+
+
+    # For current directory.
+    mkdir ".legit/.current/$tmpName";
+    opendir(DIR, ".");
+    while (my $file = readdir(DIR)) {
+        # Checks if the file is being tracked.
+        if (grep(/^$file$/,@trackedFiles)) {
+            copy($file, ".legit/.current/$tmpName/");
+            # Updates the current directory for the current branch.
+            copy($file, ".legit/.current/$currBranch/");
         }
     }
     closedir(DIR);

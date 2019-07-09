@@ -12,8 +12,6 @@ fi
 branch=`cat .legit/branch.txt`
 
 # Checks if repository has any commits.
-# Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
 if ! ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
     echo "legit-rm: error: your repository does not have any commits yet"
@@ -132,9 +130,8 @@ do
     fi
 done
 
-# Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
-prevCommit=`expr $numCommits - 1`
+# Gets number of previous commit for branch.
+prevCommit=`ls .legit/.prev/$branch/ | tail -n 2 | head -n 1`
 
 # If force flag is not given.
 if ! test "$fFlag" = "--force"

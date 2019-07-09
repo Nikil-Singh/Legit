@@ -34,7 +34,7 @@ fi
 
 # Gets the commit number and directory.
 commitNum=`echo $1 | sed 's/:.*$//g'`
-commitDir=".legit/.prev/$branch/$commitNum"
+commitDir=".legit/.commits/$commitNum"
 
 # Checks if the commit number is valid.
 if ! test -d $commitDir
@@ -54,7 +54,7 @@ then
     fileDir=".legit/.index/$branch/$file"
     message="index"
 else
-    fileDir=".legit/.prev/$branch/$commitNum/$file"
+    fileDir=".legit/.commits/$commitNum/$file"
     message="commit $commitNum"
 fi
 

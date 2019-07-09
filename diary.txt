@@ -16,3 +16,5 @@ Date        Start   Stop    Activity   Comments
 06/07/19    11:30   12:30   Coding     Implemented all of legit-status, including checking differences between files and the appropriate description for that file.
 06/07/19    13:00   14:00   Debugging  Fixed errors from legit-status that appeared during the autotest.
 06/07/19    14:00   14:30   Coding     Adjusted all code so far to handle branch changes.
+07/07/19    16:00   21:30   Coding     Implemented legit-branch and parts of legit-commit, also added a directory in .legit to hold the current directory for switching branches.
+09/07/19    14:30   17:00   Coding     Further adjusted directory layout to better suit legit-checkout and legit-branch.

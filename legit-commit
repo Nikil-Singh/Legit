@@ -57,7 +57,8 @@ fi
 # Gets number of files to be added.
 numFiles=`ls -l .legit/.index/$branch/| egrep -c ^-`
 # Gets number of previous commits.
-numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
+#numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
+numCommits=`ls -l .legit/.commits/| egrep -c ^d`
 
 # Checks if number of files in index is 0, then output error  message.
 if test $numFiles -eq 0 -a $numCommits -eq 0
@@ -87,9 +88,9 @@ fi
 # Checks if prevCommit is a negative, in which case there are no previous commits.
 if ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
-    # Sets previous commit number to be one less than total commits as they start
-    # from 0.
-    prevCommit=`expr $numCommits - 1`
+    # Sets previous commit number to be the last commit in branch.
+    #prevCommit=`expr $numCommits - 1`
+    prevCommit=`ls .legit/.prev/$branch/ | tail -n 2 | head -n 1`
 
     # Gets number of files in previous commit.
     numFilesPrev=`ls -l .legit/.prev/$branch/$prevCommit/| egrep -c ^-`
@@ -133,16 +134,19 @@ then
 fi
 # Creates directory for commit, where commits begin from 0.
 mkdir .legit/.prev/$branch/$numCommits
-
+mkdir .legit/.commits/$numCommits
 # Starts copying over the contents of index to a folder for version control.
 for file in .legit/.index/$branch/*
 do
     if test -e $file
     then
         cp $file ".legit/.prev/$branch/$numCommits"
+        cp $file ".legit/.commits/$numCommits"
     fi
 done
 
 # Updates the commit log.
-echo "$numCommits $tmpMessage" >> .legit/.prev/commitLog.txt
+#echo "$numCommits $tmpMessage" >> .legit/.prev/commitLog.txt
+echo "$numCommits $tmpMessage" >> .legit/.prev/master/branchLog.txt
+echo "$numCommits $tmpMessage" >> .legit/.commits/commitLog.txt
 echo "Committed as commit $numCommits"

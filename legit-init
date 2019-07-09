@@ -18,8 +18,12 @@ else
     mkdir .legit/.index/master              # Holds all the master branch.
     mkdir .legit/.prev                      # Holds all files based on commit number.
     mkdir .legit/.prev/master               # Holds all versions of master.
-    touch .legit/.prev/commitLog.txt        # Generates text file to log commits.
+    touch .legit/.prev/master/branchLog.txt # Hold the log for commits on that branch.
+    mkdir .legit/.commits                   # Holds all commits from all branches.
+    touch .legit/.commits/commitLog.txt     # Generates text file to log all commits.
     touch .legit/branch.txt                 # Generates text file to hold current branch name.
+    mkdir .legit/.current                   # Holds current directory when changing branches.
+    mkdir .legit/.current/master            # Holds version of master from current directory.
     echo  "master" > .legit/branch.txt      # Enters current branch into file.
 
     echo "Initialized empty legit repository in .legit"

@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+# Created by Nikil Singh z5209322
+
+# Check if a .legit directory has been initialised.
+opendir(DIR,".legit") or die "legit-branch: error: no .legit directory containing legit repository exists\n";
+closedir(DIR);
+
+# Checks if any previous commit have been made.
+open F, '<', ".legit/branch.txt";
+@lines = <F>;
+$currBranch = $lines[0];
+chomp $currBranch;
+close F;
+opendir(DIR,".legit/.prev/$currBranch/0") or die "legit-branch: error: your repository does not have any commits yet\n";
+closedir(DIR);
+
+# Checks if the appropriate number of arguements are given.
+if ($#ARGV != 0) {
+    die "usage: legit-checkout <branch>\n";
+}
+
+# Checks if branch to checkout to exists.
+$found = 0;
+opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
+while (my $dir = readdir(DIR)) {
+    if ($dir eq $ARGV[0]) {
+        $found = 1;
+    }
+}
+$branch = $ARGV[0];
+# If the branch is not found.
+if ($found == 0) {
+    die "legit-checkout: error: unknown branch '$branch'\n";
+}
+
+# Checks if on the same branch.
+if ($currBranch eq $branch) {
+    die "Already on '$branch'\n";
+}
+
+# Updates current directory folder for current branch.
+
+# Updates current directory to that of the branch being changed to.
+
+# Switches branches.
+open F, '>', ".legit/branch.txt" or die "legit-branch: error: something went wrong with legit-init\n.";
+print F "$branch";
+close F;
+
+print "Switched to branch '$branch'\n";
+
+# NEED TO REIMPLEMENT COMMITS AND SHOW WHERE COMMIT NUMBERS BUILD UP
+# Also test how commits work between different branches
+
+
+# Once new branch is created, u can change to branch and modify files then switch back to branch it was derived from, this applies recursively.
+# This no longer applies after the first commit for that branch.
