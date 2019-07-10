@@ -113,7 +113,6 @@ if ($#ARGV == -1) {
     copy(".legit/.prev/$currBranch/branchLog.txt",".legit/.prev/$tmpName/");
     closedir(DIR);
 
-
     # For current directory.
     mkdir ".legit/.current/$tmpName";
     opendir(DIR, ".");
@@ -124,8 +123,14 @@ if ($#ARGV == -1) {
             # Updates the current directory for the current branch.
             copy($file, ".legit/.current/$currBranch/");
         }
+
     }
     closedir(DIR);
+
+    # Creates a temporary index and temporary current directory, which exists till
+    # a commit is made.
+    mkdir ".legit/.tmpInd";
+    mkdir ".legit/.tmpCur";
 
 # Checks if two arguements are given.
 } elsif ($#ARGV == 1) {

@@ -62,6 +62,7 @@ $prevCommit = $lines[$#lines];
 $prevCommit =~ s/ .*//;
 chomp $prevCommit;
 close F;
+$currPrev = $prevCommit; # Used to hold previous commit number.
 
 # Gets all filenames from previous commit in the current branch.
 opendir(DIR, ".legit/.commits/$prevCommit");
@@ -86,7 +87,7 @@ while (my $file = readdir(DIR)) {
 }
 closedir(DIR);
 
-# Gets number of last commit for current branch.
+# Gets number of last commit for new branch.
 open F, '<', ".legit/.prev/$branch/branchLog.txt";
 @lines = <F>;
 $prevCommit = $lines[$#lines];
@@ -123,6 +124,46 @@ while (my $file = readdir(DIR)) {
     }
 }
 closedir(DIR);
+
+# Allows the use of the compare function.
+use File::Compare;
+
+# Checks if any files are staged for commits, so we cannot change branches unless
+# both branches have the exact same commits in accordance with the reference
+# implementation.
+if (compare(".legit/.prev/$currBranch/branchLog.txt", ".legit/.prev/$branch/branchLog.txt") != 0) {
+    @overwrittenFiles = ();
+    foreach my $file (@oldTrackedFiles){
+        # Checks if file exists in local current directory and index.
+        if (-f "$directory/$file" && -f ".legit/.index/$currBranch/$file") {
+            if (compare("$directory/$file", ".legit/.index/$currBranch/$file") != 0) {
+                push @overwrittenFiles, $file;
+            }
+        # Checks if file exists in index and previous commit.
+        } elsif (-f ".legit/.index/$currBranch/$file" && -f ".legit/.prev/$currBranch/$currPrev/$file") {
+            if (compare(".legit/.prev/$currBranch/$currPrev/$file", ".legit/.index/$currBranch/$file") != 0) {
+                push @overwrittenFiles, $file;
+            }
+        # If file doesn't exist in index but only current directory and previous commit.
+        } elsif (!(-f ".legit/.index/$currBranch/$file") && -f ".legit/.prev/$currBranch/$currPrev/$file") {
+            push @overwrittenFiles, $file;
+        }
+    }
+
+    if ($#overwrittenFiles > -1) {
+        print "legit-checkout: error: Your changes to the following files would be overwritten by checkout:\n";
+        $count = 0;
+        # Prints out all files that would be overwritten and exits program after
+        # last file affected is printed.
+        foreach my $f (@overwrittenFiles) {
+            if ($count == $#overwrittenFiles) {
+                die "$f\n";
+            } else {
+                print "$f\n";
+            }
+        }
+    }
+}
 
 # Updates the current directory locally, to that of the new branches.
 # Copies files into current directory that are being tracked by new branch.

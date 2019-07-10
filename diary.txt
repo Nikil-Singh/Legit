@@ -18,3 +18,6 @@ Date        Start   Stop    Activity   Comments
 06/07/19    14:00   14:30   Coding     Adjusted all code so far to handle branch changes.
 07/07/19    16:00   21:30   Coding     Implemented legit-branch and parts of legit-commit, also added a directory in .legit to hold the current directory for switching branches.
 09/07/19    14:30   17:00   Coding     Further adjusted directory layout to better suit legit-checkout and legit-branch.
+09/07/19    18:00   22:00   Coding     Fully implemented legit-branch and most of the error checking in legit-checkout allowing for checkout in certain circumstances.
+10/07/19    17:00   20:00   Debugging  Fixed issues with directory names in legit-checkout and files not updating in current directory when switching branches.
+10/07/19    20:30   22:00   Coding     Added code to all files to handle a temporary index when switching between branches with identical previous commits.
