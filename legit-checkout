@@ -105,3 +105,48 @@ while (my $file = readdir(DIR)) {
     }
 }
 closedir(DIR);
+
+# Allows for the use of the copy function.
+use File::Copy qw(copy);
+
+# Gets path for current directory locally.
+use Cwd qw(getcwd);
+$directory = getcwd;
+
+# Updates current directory folder in .legit for all tracked files in current
+# branch.
+opendir(DIR, "$directory");
+while (my $file = readdir(DIR)) {
+    if (grep(/^$file$/,@oldTrackedFiles)) {
+        # Updates the current directory for the current branch.
+        copy($file, ".legit/.current/$currBranch/");
+    }
+}
+closedir(DIR);
+
+# Updates the current directory locally, to that of the new branches.
+# Copies files into current directory that are being tracked by new branch.
+opendir(DIR, ".legit/.current/$branch/");
+while (my $file = readdir(DIR)) {
+    if (grep(/^$file$/,@newTrackedFiles)) {
+        copy(".legit/.current/$branch/$file","$directory");
+    }
+}
+closedir(DIR);
+
+# Removes files from current directory that are being tracked by current branch
+# but not tracked by the new branch.
+opendir(DIR, "$directory/");
+while (my $file = readdir(DIR)) {
+    if ((grep(/^$file$/,@oldTrackedFiles)) && !(grep(/^$file$/,@newTrackedFiles))) {
+        unlink $file;
+    }
+}
+closedir(DIR);
+
+# Switches branches.
+open F, '>', ".legit/branch.txt" or die "legit-branch: error: something went wrong with legit-init\n.";
+print F "$branch";
+close F;
+
+print "Switched to branch '$branch'\n";
