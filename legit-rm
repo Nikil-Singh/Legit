@@ -10,7 +10,12 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
-index=".index"
+if test -d ".legit/.tmpInd"
+then
+    index=".tmpInd"
+else
+    index=".index/$branch"
+fi
 # Checks if repository has any commits.
 if ! ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
@@ -123,7 +128,7 @@ fi
 # Check if file is in .legit repository.
 for file in $files
 do
-    if ! test -e .legit/$index/$branch/$file
+    if ! test -e .legit/$index/$file
     then
         echo "legit-rm: error: '$file' is not in the legit repository"
         exit 1
@@ -143,10 +148,10 @@ then
         if test -e $file -a -e .legit/.prev/$branch/$prevCommit/$file
         then
             # Checks if file in current directory is NOT the same as the one in index.
-            if ! diff $file .legit/$index/$branch/$file > /dev/null
+            if ! diff $file .legit/$index/$file > /dev/null
             then
                 # Checks if file in index is NOT the same as previous commit.
-                if ! diff .legit/$index/$branch/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
+                if ! diff .legit/$index/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
                 then
                     # Here file in Index != Previous Commit && CD
                     echo "legit-rm: error: '$file' in index is different to both working file and repository"
@@ -176,13 +181,13 @@ then
         elif test -e $file
         then
             # Checks if file in index is NOT the same as file in current directory.
-            if ! diff $file .legit/$index/$branch/$file > /dev/null
+            if ! diff $file .legit/$index/$file > /dev/null
             then
                 # Here CD != Index.
                 echo "legit-rm: error: '$file' in index is different to both working file and repository"
                 exit 1
             # Cheks if file in index is the same as current directory and non-existent in previous commit.
-            elif diff $file .legit/$index/$branch/$file > /dev/null
+            elif diff $file .legit/$index/$file > /dev/null
             then
                 # Here file in CD == Index != Previous Commit.
                 if test "$cFlag" != "--cached"
@@ -205,8 +210,8 @@ do
     fi
 
     # For deleting file in index.
-    if test -e .legit/$index/$branch/$file
+    if test -e .legit/$index/$file
     then
-        rm .legit/$index/$branch/$file
+        rm .legit/$index/$file
     fi
 done

@@ -165,16 +165,19 @@ if (compare(".legit/.prev/$currBranch/branchLog.txt", ".legit/.prev/$branch/bran
     }
 }
 
+# Need to check if tmpInd and tmpCur exists. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 # Updates the current directory locally, to that of the new branches.
 # Copies files into current directory that are being tracked by new branch.
-opendir(DIR, ".legit/.current/$branch/");
-while (my $file = readdir(DIR)) {
-    if (grep(/^$file$/,@newTrackedFiles)) {
-        copy(".legit/.current/$branch/$file","$directory");
+if (!(-d ".legit/.tmpInd")) {
+    opendir(DIR, ".legit/.current/$branch/");
+    while (my $file = readdir(DIR)) {
+        if (grep(/^$file$/,@newTrackedFiles)) {
+            copy(".legit/.current/$branch/$file","$directory");
+        }
     }
+    closedir(DIR);
 }
-closedir(DIR);
-
 # Removes files from current directory that are being tracked by current branch
 # but not tracked by the new branch.
 opendir(DIR, "$directory/");

@@ -10,7 +10,12 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
-index=".index"
+if test -d ".legit/.tmpInd"
+then
+    index=".tmpInd"
+else
+    index=".index/$branch"
+fi
 
 # Check if there are arguements.
 if test $# -eq 0
@@ -23,12 +28,12 @@ fi
 for file in $@
 do
     # If file exists in index but not current directory.
-    if test -e .legit/$index/$branch/$file
+    if test -e .legit/$index/$file
     then
         if ! test -e $file
         then
             # Since it is no longer in the current directory.
-            rm .legit/$index/$branch/$file
+            rm .legit/$index/$file
         fi
     elif ! test -e $file
     then
@@ -43,6 +48,6 @@ do
     # Checks if file exists to account for file that got deleted.
     if test -e $file
     then
-        cp $file ".legit/$index/$branch"
+        cp $file ".legit/$index"
     fi
 done

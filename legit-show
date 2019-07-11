@@ -10,7 +10,12 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
-index=".index"
+if test -d ".legit/.tmpInd"
+then
+    index=".tmpInd"
+else
+    index=".index/$branch"
+fi
 # Checks if no arguements are given.
 if test $# -eq 0
 then
@@ -51,7 +56,7 @@ message=""
 # in index.
 if test -z $commitNum
 then
-    fileDir=".legit/$index/$branch/$file"
+    fileDir=".legit/$index/$file"
     message="index"
 else
     fileDir=".legit/.commits/$commitNum/$file"

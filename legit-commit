@@ -10,7 +10,12 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
-index=".index"
+if test -d ".legit/.tmpInd"
+then
+    index=".tmpInd"
+else
+    index=".index/$branch"
+fi
 # Checks if the correct flags are given in the correct order based on how many
 # arguements are given. Also gets message based on the number of arguements given.
 # Also check if correct number of arguements are given. The following sets
@@ -55,7 +60,7 @@ then
 fi
 
 # Gets number of files to be added.
-numFiles=`ls -l .legit/$index/$branch/| egrep -c ^-`
+numFiles=`ls -l .legit/$index/| egrep -c ^-`
 # Gets number of previous commits.
 #numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
 numCommits=`ls -l .legit/.commits/| egrep -c ^d`
@@ -71,7 +76,7 @@ fi
 # moves the required files over.
 if test $# -eq 3
 then
-    for file in .legit/$index/$branch/*
+    for file in .legit/$index/*
     do
         tmpFilename=`echo $file | sed 's/^.*[/]//g'`
         if test -e $tmpFilename
@@ -113,10 +118,10 @@ then
         do
             fileName=`echo $file | sed 's/^.*[/]//g'`
             # Checks if file exists.
-            if test -e .legit/$index/$branch/$fileName
+            if test -e .legit/$index/$fileName
             then
                 # Checks if files have different content.
-                if ! diff .legit/$index/$branch/$fileName $file > /dev/null
+                if ! diff .legit/$index/$fileName $file > /dev/null
                 then
                     dif=1
                 fi
@@ -136,17 +141,40 @@ fi
 mkdir .legit/.prev/$branch/$numCommits
 mkdir .legit/.commits/$numCommits
 # Starts copying over the contents of index to a folder for version control.
-for file in .legit/$index/$branch/*
+for file in .legit/$index/*
 do
     if test -e $file
     then
         cp $file ".legit/.prev/$branch/$numCommits"
         cp $file ".legit/.commits/$numCommits"
+        # If the temporary index is being used.
+        if test $index = ".tmpInd"
+        then
+            # Copies files from temporary index to actual index.
+            cp $file ".legit/.index/$branch"
+        fi
     fi
 done
 
+# If the temporary current directory exists.
+for file in *
+do
+    # Checks if file is being tracked.
+    if test -e $file -a -e ".legit/.tmpInd/$file"
+    then
+        # Copies files from local directory to current branch.
+        cp $file ".legit/.current/$branch"
+    fi
+done
+
+# If the temporary index and current directory exists, they are now deleted.
+if test -d ".legit/.tmpInd" -a -d ".legit/.tmpCur"
+then
+    rm -rf ".legit/.tmpInd"
+    rm -rf ".legit/.tmpCur"
+fi
+
 # Updates the commit log.
-#echo "$numCommits $tmpMessage" >> .legit/.prev/commitLog.txt
 echo "$numCommits $tmpMessage" >> .legit/.prev/$branch/branchLog.txt
 echo "$numCommits $tmpMessage" >> .legit/.commits/commitLog.txt
 echo "Committed as commit $numCommits"

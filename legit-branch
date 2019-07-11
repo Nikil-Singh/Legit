@@ -98,8 +98,6 @@ if ($#ARGV == -1) {
                     # Checks if file is being tracked, and if not already in array,
                     # then adds to the array. Considers files in index and previous
                     # commit.
-
-                    # ADD SOMETHING TO HANDLE EMPTY TRACKEDFILES
                     if (!(grep(/^$file$/,@trackedFiles)) && $prevCommit eq $lastLine) {
                         # If file wasn't already in tracked files.
                         push @trackedFiles, $file;
@@ -131,6 +129,19 @@ if ($#ARGV == -1) {
     # a commit is made.
     mkdir ".legit/.tmpInd";
     mkdir ".legit/.tmpCur";
+
+    # Copies over files into new temporary directory.
+    foreach my $file (@trackedFiles) {
+        # Exists in index.
+        if (-f ".legit/.index/$currBranch/$file") {
+            copy(".legit/.index/$currBranch/$file",".legit/.tmpInd/");
+        }
+
+        # Exists in local current directory.
+        if (-f ".legit/.current/$currBranch/$file") {
+            copy(".legit/.current/$currBranch/$file",".legit/.tmpCur/");
+        }
+    }
 
 # Checks if two arguements are given.
 } elsif ($#ARGV == 1) {

@@ -10,7 +10,12 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
-index=".index"
+if test -d ".legit/.tmpInd"
+then
+    index=".tmpInd"
+else
+    index=".index/$branch"
+fi
 # Checks if repository has any commits.
 if ! ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
@@ -52,10 +57,10 @@ fi
 
 found=0
 # Checks all files in index
-numFiles=`ls -l .legit/$index/$branch| egrep -c ^-`
+numFiles=`ls -l .legit/$index| egrep -c ^-`
 if test $numFiles -ne 0
 then
-    for file in .legit/$index/$branch/*
+    for file in .legit/$index/*
     do
         # Checks if file is not a directory.
         modifiedFile=`echo $file | sed 's/.*[/]//g'`
@@ -132,13 +137,13 @@ rm .legit/tmpFile
 for file in $files
 do
     # If file is in current directory, index and previous commit.
-    if test -e $file -a -e .legit/$index/$branch/$file -a -e .legit/.prev/$branch/$prevCommit/$file
+    if test -e $file -a -e .legit/$index/$file -a -e .legit/.prev/$branch/$prevCommit/$file
     then
         # Checks if file in index is NOT the same as file in current directory.
-        if ! diff .legit/$index/$branch/$file $file > /dev/null
+        if ! diff .legit/$index/$file $file > /dev/null
         then
             # Checks if file in index is NOT the same as file in previous commit.
-            if ! diff .legit/$index/$branch/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
+            if ! diff .legit/$index/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
             then
                 # Here file in Index != Current Directory [== || !=] Previous Commit.
                 echo "$file - file changed, different changes staged for commit"
@@ -148,7 +153,7 @@ do
             fi
         else
             # Checks if file in index is NOT the same as file in previous commit.
-            if ! diff .legit/$index/$branch/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
+            if ! diff .legit/$index/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
             then
                 # Here file in Index == Current Directory != Previous Commit.
                 echo "$file - file changed, changes staged for commit"
@@ -159,15 +164,15 @@ do
         fi
 
     # If file is in current directory and index.
-    elif test -e $file -a -e .legit/$index/$branch/$file
+    elif test -e $file -a -e .legit/$index/$file
     then
         echo "$file - added to index"
 
     # If file is in index and previous commit.
-    elif test -e .legit/$index/$branch/$file -a -e .legit/.prev/$branch/$prevCommit/$file
+    elif test -e .legit/$index/$file -a -e .legit/.prev/$branch/$prevCommit/$file
     then
         # Checks if file in index is NOT the same as file in previous commit.
-        if ! diff .legit/$index/$branch/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
+        if ! diff .legit/$index/$file .legit/.prev/$branch/$prevCommit/$file > /dev/null
         then
             # Here file in Index != Previous Commit.
             echo "$file - file deleted, different changes staged for commit"
@@ -182,7 +187,7 @@ do
         echo "$file - untracked"
 
     # If file is in index only.
-    elif test -e .legit/$index/$branch/$file
+    elif test -e .legit/$index/$file
     then
         echo "$file - added to index"
 
