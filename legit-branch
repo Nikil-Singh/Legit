@@ -22,6 +22,7 @@ if ($#ARGV == -1) {
     opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
     while (my $dir = readdir(DIR)) {
         if ($dir ne "." && $dir ne "..") {
+            # Adds branch to list of branches.
             push @branches, $dir;
         }
     }
@@ -29,45 +30,51 @@ if ($#ARGV == -1) {
 
     # Sorts branches in alphabetical order.
     @branches = sort @branches;
+
+    # Prints list of branches.
     foreach my $branch (@branches) {
         print "$branch\n";
     }
 
 # Checks if one arguement is given.
 } elsif ($#ARGV == 0) {
-    $tmpName = $ARGV[0];
+    $newBranch = $ARGV[0];
     # Checks if the one arguement given is "-d".
-    if ($ARGV[0] eq "-d") {
+    if ($newBranch eq "-d") {
         die "legit-branch: error: branch name required\n";
     }
 
     # Checks if a valid flag was given.
-    if ($ARGV[0] =~ m/^-.*$/) {
+    if ($newBranch =~ m/^-.*$/) {
         die "usage: legit-branch [-d] <branch>\n";
     }
 
     # Checks if a valid branch name was given.
-    if (!($ARGV[0] =~ m/^[A-Za-z][A-Za-z0-9_-]*$/) && !($ARGV[0] =~ m/^[0-9]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$/)) {
-        die "legit-branch: error: invalid branch name '$tmpName'\n";
+    if (!($newBranch =~ m/^[A-Za-z][A-Za-z0-9_-]*$/) && !($newBranch =~ m/^[0-9]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$/)) {
+        die "legit-branch: error: invalid branch name '$newBranch'\n";
     }
 
     # Checks if branch already exists.
     opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
     while (my $dir = readdir(DIR)) {
-        if ($dir eq $ARGV[0]) {
-            die "legit-branch: error: branch '$tmpName' already exists\n";
+        if ($dir eq $newBranch) {
+            die "legit-branch: error: branch '$newBranch' already exists\n";
         }
     }
     closedir(DIR);
 
-    # Creates the required directories(branches) and copies the appropriate files over.
+    # Allows for the use of the copy function.
     use File::Copy qw(copy);
-    # For index.
-    mkdir ".legit/.index/$tmpName";
+    
+    # Creates the required directories(branches) and copies the appropriate
+    # files over.
+    # Copies files over from index.
+    mkdir ".legit/.index/$newBranch";
     opendir(DIR, ".legit/.index/$currBranch");
     while (my $file = readdir(DIR)) {
         if (-f ".legit/.index/$currBranch/$file") {
-            copy(".legit/.index/$currBranch/$file", ".legit/.index/$tmpName/");
+            # Copies files from current branch to new branch index.
+            copy(".legit/.index/$currBranch/$file", ".legit/.index/$newBranch/");
             # Keeps track of files that are being tracked by legit.
             push @trackedFiles, $file;
         }
@@ -79,26 +86,31 @@ if ($#ARGV == -1) {
     @lines = <F>;
     foreach $line (@lines) {
         chomp $line;
-        $lastLine = $line;
+        $lastCommit = $line;
     }
     # Removes all non-digit characters from string.
-    $lastLine =~ s/\D//g;
+    $lastCommit =~ s/\D//g;
     close F;
 
     # For all previous commits.
-    mkdir ".legit/.prev/$tmpName";
+    mkdir ".legit/.prev/$newBranch";
     opendir(DIR, ".legit/.prev/$currBranch");
     while (my $prevCommit = readdir(DIR)) {
+        # If previous commit is a directory in current branch.
         if ($prevCommit ne "." && $prevCommit ne ".." && -d ".legit/.prev/$currBranch/$prevCommit") {
             opendir(COMMIT, ".legit/.prev/$currBranch/$prevCommit");
-            mkdir ".legit/.prev/$tmpName/$prevCommit";
+            # Creates directory for previous commit in new branch.
+            mkdir ".legit/.prev/$newBranch/$prevCommit";
             while (my $file = readdir(COMMIT)) {
                 if (-f ".legit/.prev/$currBranch/$prevCommit/$file") {
-                    copy(".legit/.prev/$currBranch/$prevCommit/$file", ".legit/.prev/$tmpName/$prevCommit/");
-                    # Checks if file is being tracked, and if not already in array,
-                    # then adds to the array. Considers files in index and previous
-                    # commit.
-                    if (!(grep(/^$file$/,@trackedFiles)) && $prevCommit eq $lastLine) {
+                    # Copies file from previous commit of current branch to the
+                    # new branch.
+                    copy(".legit/.prev/$currBranch/$prevCommit/$file", ".legit/.prev/$newBranch/$prevCommit/");
+
+                    # Checks if file is being tracked, and if not already in
+                    # array, then adds to the array. Considers files in index
+                    # and previous commit.
+                    if (!(grep(/^$file$/,@trackedFiles)) && $prevCommit eq $lastCommit) {
                         # If file wasn't already in tracked files.
                         push @trackedFiles, $file;
                     }
@@ -108,16 +120,17 @@ if ($#ARGV == -1) {
         }
     }
     # Copies over the branch log.
-    copy(".legit/.prev/$currBranch/branchLog.txt",".legit/.prev/$tmpName/");
+    copy(".legit/.prev/$currBranch/branchLog.txt",".legit/.prev/$newBranch/");
     closedir(DIR);
 
-    # For current directory.
-    mkdir ".legit/.current/$tmpName";
+    # Creates current directory folder in .legit for new branch.
+    mkdir ".legit/.current/$newBranch";
     opendir(DIR, ".");
     while (my $file = readdir(DIR)) {
         # Checks if the file is being tracked.
         if (grep(/^$file$/,@trackedFiles) && -f $file) {
-            copy($file, ".legit/.current/$tmpName/");
+            # Copies file into new branches current directory folder.
+            copy($file, ".legit/.current/$newBranch/");
             # Updates the current directory for the current branch.
             copy($file, ".legit/.current/$currBranch/");
         }
@@ -125,8 +138,8 @@ if ($#ARGV == -1) {
     }
     closedir(DIR);
 
-    # Creates a temporary index and temporary current directory, which exists till
-    # a commit is made.
+    # Creates a temporary index and temporary current directory, which exists
+    # till a commit is made.
     mkdir ".legit/.tmpInd";
     mkdir ".legit/.tmpCur";
 
@@ -145,19 +158,19 @@ if ($#ARGV == -1) {
 
 # Checks if two arguements are given.
 } elsif ($#ARGV == 1) {
-    $tmpName = $ARGV[1];
+    $newBranch = $ARGV[1];
     # Checks if a valid flag was given.
     if ($ARGV[0] ne "-d") {
         die "usage: legit-branch [-d] <branch>\n";
     }
 
     # Checks if a valid branch name was given.
-    if (!($ARGV[1] =~ m/^[A-Za-z][A-Za-z0-9_-]*$/) && !($ARGV[1] =~ m/^[0-9]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$/)) {
-        die "legit-branch: error: invalid branch name '$tmpName'\n";
+    if (!($newBranch =~ m/^[A-Za-z][A-Za-z0-9_-]*$/) && !($newBranch =~ m/^[0-9]*[a-zA-Z_-]+[a-zA-Z0-9_-]*$/)) {
+        die "legit-branch: error: invalid branch name '$newBranch'\n";
     }
 
     # Checks if branch name is master.
-    if ($tmpName eq "master") {
+    if ($newBranch eq "master") {
         die "legit-branch: error: can not delete branch 'master'\n";
     }
 
@@ -165,23 +178,23 @@ if ($#ARGV == -1) {
     $found = 0;
     opendir(DIR, ".legit/.index/") or die "legit-branch: error: something went wrong with legit-init\n.";
     while (my $dir = readdir(DIR)) {
-        if ($dir eq $ARGV[1]) {
+        if ($dir eq $newBranch) {
             $found = 1;
         }
     }
 
     # If the branch is not found.
     if ($found == 0) {
-        die "legit-branch: error: branch '$tmpName' does not exist\n";
+        die "legit-branch: error: branch '$newBranch' does not exist\n";
     }
 
     # Check for unmerged changes.
 
     # Deletes the branch.
     use File::Path qw(remove_tree);
-    remove_tree(".legit/.index/$tmpName", ".legit/.prev/$tmpName", ".legit/.current/$tmpName");
+    remove_tree(".legit/.index/$newBranch", ".legit/.prev/$newBranch", ".legit/.current/$newBranch");
 
-    print "Deleted branch '$tmpName'\n";
+    print "Deleted branch '$newBranch'\n";
 # Checks if more than two are given.
 } else {
     # Too many arguements were given.

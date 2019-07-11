@@ -10,12 +10,18 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
+
+# Checks if a temporary index is being used when switching branches.
 if test -d ".legit/.tmpInd"
 then
+    # If temporary branch exists, set index to tempInd.
     index=".tmpInd"
 else
+    # If temporary branch does not exist, set index to that of the current
+    # branches.
     index=".index/$branch"
 fi
+
 # Checks if no arguements are given.
 if test $# -eq 0
 then
@@ -50,7 +56,7 @@ fi
 
 # Gets the file name and its directory.
 file=`echo $1 | sed 's/.*://g'`
-message=""
+message=""  # Initialises message variable.
 
 # Handles the case where there is nothing preceeding ':' for checking for file
 # in index.

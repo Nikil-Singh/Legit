@@ -10,16 +10,23 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
+
+# Checks if a temporary index is being used when switching branches.
 if test -d ".legit/.tmpInd"
 then
+    # If temporary branch exists, set index to tempInd.
     index=".tmpInd"
 else
+    # If temporary branch does not exist, set index to that of the current
+    # branches.
     index=".index/$branch"
 fi
+
 # Checks if the correct flags are given in the correct order based on how many
-# arguements are given. Also gets message based on the number of arguements given.
-# Also check if correct number of arguements are given. The following sets
-# variables for the sake of readability.
+# arguements are given. Also gets message based on the number of arguements
+# given. Also check if correct number of arguements are given. The following
+# sets variables for the sake of readability.
+# If number of arguements is 2.
 if test $# -eq 2
 then
     # If in order -m <message>
@@ -30,6 +37,7 @@ then
         echo "usage: legit-commit [-a] -m commit-message"
         exit 1
     fi
+# If number of arguements is 3.
 elif test $# -eq 3
 then
     # If in order -m <message> -a
@@ -61,8 +69,8 @@ fi
 
 # Gets number of files to be added.
 numFiles=`ls -l .legit/$index/| egrep -c ^-`
+
 # Gets number of previous commits.
-#numCommits=`ls -l .legit/.prev/$branch/| egrep -c ^d`
 numCommits=`ls -l .legit/.commits/| egrep -c ^d`
 
 # Checks if number of files in index is 0, then output error  message.
@@ -76,8 +84,10 @@ fi
 # moves the required files over.
 if test $# -eq 3
 then
+    # Cycles through files in index for current branch.
     for file in .legit/$index/*
     do
+        # Extracts the file name.
         tmpFilename=`echo $file | sed 's/^.*[/]//g'`
         if test -e $tmpFilename
         then
@@ -90,11 +100,10 @@ then
     done
 fi
 
-# Checks if prevCommit is a negative, in which case there are no previous commits.
+# Checks if there are any previous commits in the branch.
 if ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
     # Sets previous commit number to be the last commit in branch.
-    #prevCommit=`expr $numCommits - 1`
     prevCommit=`ls .legit/.prev/$branch/ | tail -n 2 | head -n 1`
 
     # Gets number of files in previous commit.
@@ -107,15 +116,16 @@ then
         exit 1
     fi
 
-    # Checks if same number of files exist in previous commits and index, then checks
-    # if all the files are the same and if their contents have changed. If the
-    # content hasn't changed, then it outputs an error message.
+    # Checks if same number of files exist in previous commits and index, then
+    # checks if all the files are the same and if their contents have changed.
+    # If the content hasn't changed, then it outputs an error message.
     if test $numCommits -gt 0 -a $numFiles -eq $numFilesPrev
     then
-        dif=0
+        dif=0   # Variable holds whether files are different.
         # Cycles through all files in previous commit.
         for file in .legit/.prev/$branch/$prevCommit/*
         do
+            # Extracts the filename.
             fileName=`echo $file | sed 's/^.*[/]//g'`
             # Checks if file exists.
             if test -e .legit/$index/$fileName
@@ -123,13 +133,16 @@ then
                 # Checks if files have different content.
                 if ! diff .legit/$index/$fileName $file > /dev/null
                 then
+                    # Sets value to 1 since files have different content.
                     dif=1
                 fi
             else
+                # Sets value to 1 since file no longer exists.
                 dif=1
             fi
         done
-        # If files don't have different content then it outputs an error message.
+
+        # If files don't have different content, then outputs an error message.
         if test $dif -eq 0
         then
             echo "nothing to commit"
@@ -137,16 +150,20 @@ then
         fi
     fi
 fi
-# Creates directory for commit, where commits begin from 0.
+
+# Creates directory for commits in branch, where commits begin from 0.
 mkdir .legit/.prev/$branch/$numCommits
 mkdir .legit/.commits/$numCommits
+
 # Starts copying over the contents of index to a folder for version control.
 for file in .legit/$index/*
 do
     if test -e $file
     then
+        # Copies files over for commits.
         cp $file ".legit/.prev/$branch/$numCommits"
         cp $file ".legit/.commits/$numCommits"
+
         # If the temporary index is being used.
         if test $index = ".tmpInd"
         then
@@ -170,11 +187,12 @@ done
 # If the temporary index and current directory exists, they are now deleted.
 if test -d ".legit/.tmpInd" -a -d ".legit/.tmpCur"
 then
+    # Deletes the tmpInd and tmpCur directories.
     rm -rf ".legit/.tmpInd"
     rm -rf ".legit/.tmpCur"
 fi
 
-# Updates the commit log.
+# Updates the commit and branch logs.
 echo "$numCommits $tmpMessage" >> .legit/.prev/$branch/branchLog.txt
 echo "$numCommits $tmpMessage" >> .legit/.commits/commitLog.txt
 echo "Committed as commit $numCommits"

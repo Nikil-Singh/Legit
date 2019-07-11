@@ -9,21 +9,22 @@ then
     exit 1
 fi
 
+# Checks if a .legit directory already exists.
 if test -d .legit
 then
     echo "legit-init: error: .legit already exists"
 else
     mkdir .legit                            # Initialises the .legit folder.
-    mkdir .legit/.index                     # Holds all current files and branches added.
-    mkdir .legit/.index/master              # Holds all the master branch.
-    mkdir .legit/.prev                      # Holds all files based on commit number.
+    mkdir .legit/.index                     # Holds staged files within branches.
+    mkdir .legit/.index/master              # Holds all staged files in master branch.
+    mkdir .legit/.prev                      # Holds previous commits within branches.
     mkdir .legit/.prev/master               # Holds all versions of master.
-    touch .legit/.prev/master/branchLog.txt # Hold the log for commits on that branch.
-    mkdir .legit/.commits                   # Holds all commits from all branches.
+    touch .legit/.prev/master/branchLog.txt # Generates file to log commits for branch.
+    mkdir .legit/.commits                   # Holds commits from all branches.
     touch .legit/.commits/commitLog.txt     # Generates text file to log all commits.
+    mkdir .legit/.current                   # Holds current directory for branches when changing branches.
+    mkdir .legit/.current/master            # Holds current directory for master.
     touch .legit/branch.txt                 # Generates text file to hold current branch name.
-    mkdir .legit/.current                   # Holds current directory when changing branches.
-    mkdir .legit/.current/master            # Holds version of master from current directory.
     echo  "master" > .legit/branch.txt      # Enters current branch into file.
 
     echo "Initialized empty legit repository in .legit"

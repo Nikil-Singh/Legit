@@ -10,10 +10,15 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
+
+# Checks if a temporary index is being used when switching branches.
 if test -d ".legit/.tmpInd"
 then
+    # If temporary branch exists, set index to tempInd.
     index=".tmpInd"
 else
+    # If temporary branch does not exist, set index to that of the current
+    # branches.
     index=".index/$branch"
 fi
 
@@ -27,14 +32,16 @@ fi
 # Check if all arguements are valid files.
 for file in $@
 do
-    # If file exists in index but not current directory.
+    # Checks if file exists in index.
     if test -e .legit/$index/$file
     then
+        # Checks if file does not exist in current directory.
         if ! test -e $file
         then
             # Since it is no longer in the current directory.
             rm .legit/$index/$file
         fi
+    # Checks if file does not exist in index nor current directory.
     elif ! test -e $file
     then
         echo "legit-add: error: can not open '$file'"
@@ -45,9 +52,10 @@ done
 # Adds the files to the index.
 for file in $@
 do
-    # Checks if file exists to account for file that got deleted.
+    # Checks if file exists to account for if file that got deleted.
     if test -e $file
     then
+        # Copies file from current directory into index.
         cp $file ".legit/$index"
     fi
 done

@@ -10,12 +10,18 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
+
+# Checks if a temporary index is being used when switching branches.
 if test -d ".legit/.tmpInd"
 then
+    # If temporary branch exists, set index to tempInd.
     index=".tmpInd"
 else
+    # If temporary branch does not exist, set index to that of the current
+    # branches.
     index=".index/$branch"
 fi
+
 # Checks if repository has any commits.
 if ! ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
@@ -25,6 +31,7 @@ fi
 
 files=""    # Variable to hold all files.
 found=0     # Variable for whether a file has been seen.
+
 # Gets all the files from current directory, index and the previous commit.
 # Checks all files in current directory.
 numFiles=`ls -l | egrep -c ^-`
@@ -42,6 +49,7 @@ then
                 # Checks for duplicate files.
                 if test $tmpFile = $file
                 then
+                    # Sets value to 1 since file is found.
                     found=1
                 fi
             done
@@ -55,17 +63,22 @@ then
     done
 fi
 
+# Resets value to 0.
 found=0
+
 # Checks all files in index
 numFiles=`ls -l .legit/$index| egrep -c ^-`
 if test $numFiles -ne 0
 then
     for file in .legit/$index/*
     do
-        # Checks if file is not a directory.
+        # Extracts filename.
         modifiedFile=`echo $file | sed 's/.*[/]//g'`
+
+        # Checks if file is not a directory.
         if ! test -d $file
         then
+            # Resets value to 0.
             found=0
             # Checks if file is already held in $files.
             for tmpFile in $files
@@ -73,21 +86,27 @@ then
                 # Checks for duplicate files.
                 if test $tmpFile = $modifiedFile
                 then
+                    # Sets value to 1 since file is found.
                     found=1
                 fi
             done
+
             # If the file is not a duplicate file.
             if test $found -eq 0
             then
+                # Concatenates filename to list of files.
                 files=`echo $files $modifiedFile`
             fi
         fi
     done
 fi
 
+# Resets value to 0.
 found=0
+
 # Gets number of previous commit for branch.
 prevCommit=`ls .legit/.prev/$branch/ | tail -n 2 | head -n 1`
+
 # Checks all files in previous commit.
 numFiles=`ls -l .legit/.prev/$branch/$prevCommit| egrep -c ^-`
 if test $numFiles -ne 0
@@ -98,6 +117,7 @@ then
         modifiedFile=`echo $file | sed 's/.*[/]//g'`
         if ! test -d $file
         then
+            # Resets value to 0.
             found=0
             # Checks if file is already held in $files.
             for tmpFile in $files
@@ -105,24 +125,27 @@ then
                 # Checks for duplicate files.
                 if test $tmpFile = $modifiedFile
                 then
+                    # Sets value to 1 since file is found.
                     found=1
                 fi
             done
             # If the file is not a duplicate file.
             if test $found -eq 0
             then
+                # Concatenates filename to list of files.
                 files=`echo $files $modifiedFile`
             fi
         fi
     done
 fi
+
 # Sorts all the files into alphabetical order.
 # Creates a tmpFile to hold alphabetically sorted files.
 touch .legit/tmpFile
 
+# Outputs each file into the tmpFile
 for file in $files
 do
-    # Outputs each file into the tmpFile
     echo $file >> .legit/tmpFile
 done
 
@@ -132,8 +155,8 @@ files=`sort .legit/tmpFile`
 # Removes the tmp file.
 rm .legit/tmpFile
 
-# Compare the files in current directory, index and previous commit, then outputs
-# the appropriate message for that file describing its status.
+# Compare the files in current directory, index and previous commit, then
+# outputs the appropriate message for that file describing its status.
 for file in $files
 do
     # If file is in current directory, index and previous commit.

@@ -10,12 +10,18 @@ fi
 
 # Gets the current branch.
 branch=`cat .legit/branch.txt`
+
+# Checks if a temporary index is being used when switching branches.
 if test -d ".legit/.tmpInd"
 then
+    # If temporary branch exists, set index to tempInd.
     index=".tmpInd"
 else
+    # If temporary branch does not exist, set index to that of the current
+    # branches.
     index=".index/$branch"
 fi
+
 # Checks if repository has any commits.
 if ! ls -l .legit/.prev/$branch/| egrep -c ^d > /dev/null
 then
@@ -23,9 +29,9 @@ then
     exit 1
 fi
 
-cFlag=""            # String for checking --cached flag.
-fFlag=""            # String for checking --force flag.
-files=""            # String holds all files.
+cFlag=""    # String for checking --cached flag.
+fFlag=""    # String for checking --force flag.
+files=""    # String holds all files.
 
 # Checks if there is only one arguement.
 if test $# -eq 1
@@ -44,9 +50,11 @@ then
 else
     prevLastFile=0      # Position of last file checked.
     currLastFile=0      # Position of current file checked.
-    filePosDiff=0       # Difference in position of current and previous file poisitions.
+    filePosDiff=0       # Position difference of current and previous files.
     numFiles=0          # The number of files read.
     counter=0           # Counter for number of arguements processed.
+
+    # Cycles through arguements in command line.
     for arg in $@
     do
         # Checks if the --cached flag was given.
@@ -84,7 +92,8 @@ else
             # Updates the number of files seen.
             numFiles=`expr $numFiles + 1`
 
-            # If first file is found, then sets prevLastFile to that args position.
+            # If first file is found, then sets prevLastFile to that args
+            # position.
             if test $numFiles -eq 1
             then
                 prevLastFile=$counter
@@ -98,15 +107,15 @@ else
             # Gets the difference between current and previous file position.
             filePosDiff=`expr $currLastFile - $prevLastFile`
 
-            # If difference is greater than or equal to 2, then order of arguements
-            # entereed is incorrect.
+            # If difference is greater than or equal to 2, then order of
+            # arguements entereed is incorrect.
             if test $filePosDiff -ge 2
             then
                 echo "usage: legit-rm [--force] [--cached] <filenames>"
                 exit 1
             fi
         fi
-        counter=`expr $counter + 1`
+        counter=`expr $counter + 1` # Increments counter.
     done
 fi
 
@@ -141,13 +150,15 @@ prevCommit=`ls .legit/.prev/$branch/ | tail -n 2 | head -n 1`
 # If force flag is not given.
 if ! test "$fFlag" = "--force"
 then
-    # Checks if file is different in index, previous commit and current directory.
+    # Checks if file is different in index, previous commit and current
+    # directory.
     for file in $files
     do
         # Checks if file is in current directory and previos commit.
         if test -e $file -a -e .legit/.prev/$branch/$prevCommit/$file
         then
-            # Checks if file in current directory is NOT the same as the one in index.
+            # Checks if file in current directory is NOT the same as the one
+            # in index.
             if ! diff $file .legit/$index/$file > /dev/null
             then
                 # Checks if file in index is NOT the same as previous commit.
@@ -157,6 +168,7 @@ then
                     echo "legit-rm: error: '$file' in index is different to both working file and repository"
                     exit 1
                 else
+                    # If cached flag is not given.
                     if test "$cFlag" != "--cached"
                     then
                         # Here file in Index == Previous Commit != CD
@@ -166,9 +178,11 @@ then
                 fi
             # If file in current directory is the same as the one in index.
             else
-                # Checks if file in current directory is NOT the same as previous commit.
+                # Checks if file in current directory is NOT the same as
+                # previous commit.
                 if ! diff $file .legit/.prev/$branch/$prevCommit/$file > /dev/null
                 then
+                    # If cached flag is not given.
                     if test "$cFlag" != "--cached"
                     then
                         # Here file in CD == Index != Previous Commit.
@@ -180,16 +194,19 @@ then
         # If file is only in index and current directory.
         elif test -e $file
         then
-            # Checks if file in index is NOT the same as file in current directory.
+            # Checks if file in index is NOT the same as file in current
+            # directory.
             if ! diff $file .legit/$index/$file > /dev/null
             then
                 # Here CD != Index.
                 echo "legit-rm: error: '$file' in index is different to both working file and repository"
                 exit 1
-            # Cheks if file in index is the same as current directory and non-existent in previous commit.
+            # Cheks if file in index is the same as current directory and
+            # non-existent in previous commit.
             elif diff $file .legit/$index/$file > /dev/null
             then
                 # Here file in CD == Index != Previous Commit.
+                # If cached flag is not given.
                 if test "$cFlag" != "--cached"
                 then
                     echo "legit-rm: error: '$file' has changes staged in the index"
@@ -203,7 +220,7 @@ fi
 # Does the actual removal of files.
 for file in $files
 do
-    # For deleting file in current directory.
+    # For deleting file in current directory, given cached flag is not given.
     if test -e $file -a "$cFlag" != "--cached"
     then
         rm $file

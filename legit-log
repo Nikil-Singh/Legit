@@ -19,5 +19,5 @@ then
 fi
 
 # Prints out the commit log for that branch.
-file=.legit/.prev/$branch/branchLog.txt
+file=".legit/.prev/$branch/branchLog.txt"
 tac $file

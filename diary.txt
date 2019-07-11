@@ -22,4 +22,4 @@ Date        Start   Stop    Activity   Comments
 10/07/19    17:00   20:00   Debugging  Fixed issues with directory names in legit-checkout and files not updating in current directory when switching branches.
 10/07/19    20:30   22:00   Coding     Added code to all files to handle a temporary index when switching between branches with identical previous commits.
 11/07/19    10:00   11:00   Coding     Fully implemented legit-checkout to handle checking for file overwriting.
-11/07/19    12:00   12:30   Debugging  Fixed error message issue with legit-checkout when printing files that would be overwritten.  
+11/07/19    12:00   12:30   Debugging  Fixed error message issue with legit-checkout when printing files that would be overwritten.

@@ -58,16 +58,17 @@ closedir(DIR);
 # Gets number of last commit for current branch.
 open F, '<', ".legit/.prev/$currBranch/branchLog.txt";
 @lines = <F>;
-$prevCommit = $lines[$#lines];
-$prevCommit =~ s/ .*//;
-chomp $prevCommit;
+$prevCommit = $lines[$#lines];  # Gets last line in file.
+$prevCommit =~ s/ .*//;         # Gets rid of whitespace.
+chomp $prevCommit;              # Gets rid of newline.
 close F;
-$currPrev = $prevCommit; # Used to hold previous commit number.
+$currPrev = $prevCommit;        # Used to hold previous commit number.
 
 # Gets all filenames from previous commit in the current branch.
 opendir(DIR, ".legit/.commits/$prevCommit");
 while (my $file = readdir(DIR)) {
     if (-f ".legit/.commits/$prevCommit/$file") {
+        # Checks if file isn't in @oldTrackedFiles.
         if (!(grep(/^$file$/,@oldTrackedFiles))) {
             # If file wasn't already in tracked files.
             push @oldTrackedFiles, $file;
@@ -90,15 +91,16 @@ closedir(DIR);
 # Gets number of last commit for new branch.
 open F, '<', ".legit/.prev/$branch/branchLog.txt";
 @lines = <F>;
-$prevCommit = $lines[$#lines];
-$prevCommit =~ s/ .*//;
-chomp $prevCommit;
+$prevCommit = $lines[$#lines];  # Gets last line in file.
+$prevCommit =~ s/ .*//;         # Gets rid of whitespace.
+chomp $prevCommit;              # Gets rid of newline.
 close F;
 
 # Gets all filenames from previous commit in the new branch.
 opendir(DIR, ".legit/.commits/$prevCommit");
 while (my $file = readdir(DIR)) {
     if (-f ".legit/.commits/$prevCommit/$file") {
+        # Checks if file isn't in @newTrackedFiles.
         if (!(grep(/^$file$/,@newTrackedFiles))) {
             # If file wasn't already in tracked files.
             push @newTrackedFiles, $file;
@@ -119,6 +121,7 @@ $directory = getcwd;
 if (!(-d ".legit/.tmpInd")) {
     opendir(DIR, "$directory");
     while (my $file = readdir(DIR)) {
+        # Checks if file is in @oldTrackedFiles.
         if (grep(/^$file$/,@oldTrackedFiles)) {
             # Updates the current directory for the current branch.
             copy($file, ".legit/.current/$currBranch/");
@@ -126,6 +129,7 @@ if (!(-d ".legit/.tmpInd")) {
     }
     closedir(DIR);
 }
+
 # Allows the use of the compare function.
 use File::Compare;
 
@@ -145,7 +149,8 @@ if (compare(".legit/.prev/$currBranch/branchLog.txt", ".legit/.prev/$branch/bran
             if (compare(".legit/.prev/$currBranch/$currPrev/$file", ".legit/.index/$currBranch/$file") != 0) {
                 push @overwrittenFiles, $file;
             }
-        # If file doesn't exist in index but only current directory and previous commit.
+        # If file doesn't exist in index but only current directory and previous
+        # commit.
         } elsif (!(-f ".legit/.index/$currBranch/$file") && -f ".legit/.prev/$currBranch/$currPrev/$file") {
             push @overwrittenFiles, $file;
         }
@@ -181,7 +186,9 @@ if (compare(".legit/.prev/$currBranch/branchLog.txt", ".legit/.prev/$branch/bran
 if (!(-d ".legit/.tmpInd")) {
     opendir(DIR, ".legit/.current/$branch/");
     while (my $file = readdir(DIR)) {
+        # If file is in @newTrackedFiles.
         if (grep(/^$file$/,@newTrackedFiles)) {
+            # Copies file into the current directory.
             copy(".legit/.current/$branch/$file","$directory");
         }
     }
