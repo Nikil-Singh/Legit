@@ -89,13 +89,13 @@ then
     do
         # Extracts the file name.
         tmpFilename=`echo $file | sed 's/^.*[/]//g'`
-        if test -e $tmpFilename
+        if test -e "$tmpFilename"
         then
             # Copy over file from current directory to index.
             cp $tmpFilename $file
         else
             # Remove file from index as it no longer exists in current directory.
-            rm $file
+            rm "$file"
         fi
     done
 fi

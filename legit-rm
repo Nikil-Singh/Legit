@@ -33,6 +33,13 @@ cFlag=""    # String for checking --cached flag.
 fFlag=""    # String for checking --force flag.
 files=""    # String holds all files.
 
+# Checks if there are no arguements at all.
+if test $# -eq 0
+then
+    echo "usage: legit-rm [--force] [--cached] <filenames>"
+    exit 1
+fi
+
 # Checks if there is only one arguement.
 if test $# -eq 1
 then

@@ -18,6 +18,13 @@ then
     exit 1
 fi
 
+# Checks if any arguements were given.
+if test $# -ne 0
+then
+    echo "usage: legit-log"
+    exit 1
+fi
+
 # Prints out the commit log for that branch.
 file=".legit/.prev/$branch/branchLog.txt"
 tac $file
