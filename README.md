@@ -6,3 +6,4 @@ COMMANDS:
     Written as: $ legit-init, or $ sh legit-init
 2. legit-add: Implemented in shelll. Adds all files following command to index for staging.
     Written as: $ legit-add <filenames>, or $ sh legit-add <filenames>
+3. legit-commit: Implemented in shell. Commits all staged files. 
